@@ -1,0 +1,36 @@
+{
+  "name": "@grubless/cli",
+  "version": "0.1.0",
+  "description": "Command-line client for Grubless \u2014 crypto tax for entities.",
+  "type": "module",
+  "bin": {
+    "grubless": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json --noEmit && tsup && node scripts/verify-bundle.mjs",
+    "verify-bundle": "node scripts/verify-bundle.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@grubless/api": "workspace:*",
+    "@grubless/api-types": "workspace:*",
+    "@grubless/db": "workspace:*",
+    "@types/node": "^22.9.0",
+    "fastify": "^5.1.0",
+    "postgres": "^3.4.5",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"]
+  },
+  // apps/api/src/types.d.ts carries the Fastify module augmentation that adds
+  // `app.db` and `req.userId`. The integration test boots the real server via
+  // `@grubless/api/src/server.js`, which pulls apps/api source into this
+  // program — without the augmentation, every one of those files fails to
+  // typecheck here even though it compiles fine in its own package.
+  //
+  // Only reachable from the test; it contributes nothing to the published
+  // bundle (a .d.ts emits no runtime code).
+  "include": ["src", "../api/src/types.d.ts"]
+}
