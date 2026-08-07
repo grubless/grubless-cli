@@ -1,5 +1,5 @@
 import { heldIn, money, qty, signed } from "../output.js";
-import { renderChart } from "./chart.js";
+import { renderPortfolio, toChartPoints } from "./chart.js";
 import { ansi, pad, truncate, visibleWidth } from "./terminal.js";
 import { TABS, TAB_LABEL, isList, rowCount, type State, type Tab } from "./state.js";
 
@@ -91,7 +91,11 @@ function entityLines(state: State, width: number, height: number): string[] {
   const rows = viewportRows(height);
   const { header, body } = tabContent(state, width, rows);
 
-  lines.push(`${ansi.dim}${header}${ansi.reset}`);
+  // A list's header is a column rule and dims as a whole. The dashboard's
+  // carries its own colour — each figure tinted to match its line on the
+  // chart, which is what saves a row that would otherwise go to a legend — so
+  // wrapping it here would end the dim run at its first embedded reset.
+  lines.push(isList(state.tab) ? `${ansi.dim}${header}${ansi.reset}` : header);
 
   if (state.loading) {
     lines.push(`${ansi.dim}Loading…${ansi.reset}`);
@@ -130,7 +134,7 @@ function tabBar(active: Tab): string {
 function tabContent(state: State, width: number, rows: number): { header: string; body: string[] } {
   switch (state.tab) {
     case "chart":
-      return chartTab(state, width, rows);
+      return dashboardTab(state, width, rows);
     case "holdings":
       return holdingsTab(state, width);
     case "warnings":
@@ -142,34 +146,83 @@ function tabContent(state: State, width: number, rows: number): { header: string
   }
 }
 
+/** The chart's share of the tab; holdings take what's left. */
+const CHART_SHARE = 0.7;
+/** Header + one holding + "and N more" — anything less isn't a tile. */
+const MIN_TILE_ROWS = 3;
+
 /**
- * Portfolio value over time, plus where it stands today.
+ * The dashboard: portfolio over time, with current holdings beneath it.
  *
- * The header carries the three figures the plot cannot: today's value, the
- * paper gain/loss on what's still held, and income received to date. The
- * line answers "which way, and how fast"; the header answers "how much".
+ * Same two panels as the web dashboard, in the same order, because they
+ * answer consecutive questions — "which way is this going" and then "what is
+ * it actually made of". Neither is much use without the other, and a terminal
+ * has room for both.
  *
- * No colour in the header — `entityLines` wraps it in `dim`, and an embedded
- * `reset` would end the dim run for everything after it on that row.
+ * The chart takes 70% of the tab and the tile the rest. The split is on the
+ * viewport rather than fixed rows so both panels grow with the window; on a
+ * short one the tile is dropped entirely rather than shown as a header with
+ * nothing under it.
+ *
+ * The header carries the three figures the plot cannot state exactly, each
+ * tinted to match its own line below — that is the legend, folded into a row
+ * that had to exist anyway. UNREALISED takes its strip's yellow rather than
+ * the app's green/red gain-loss convention: with three lines on screen, a
+ * colour that tracks polarity instead of series would collide with the green
+ * income line at exactly the moment the gain turns positive. The sign is
+ * explicit in the figure itself.
  */
-function chartTab(state: State, width: number, rows: number): { header: string; body: string[] } {
+function dashboardTab(state: State, width: number, rows: number): { header: string; body: string[] } {
   const points = state.data.history;
   const last = points[points.length - 1];
 
   const header = last
-    ? `  ${last.date}   VALUE ${money(last.value)}   UNREALISED ${signed(last.unrealizedPL)}   INCOME ${money(last.cumulativeIncome)}`
-    : "  no history";
+    ? `  ${ansi.dim}${last.date}${ansi.reset}   ${ansi.cyan}VALUE ${money(last.value)}${ansi.reset}` +
+      `   ${ansi.yellow}UNREALISED ${signed(last.unrealizedPL)}${ansi.reset}` +
+      `   ${ansi.green}INCOME ${money(last.cumulativeIncome)}${ansi.reset}`
+    : `  ${ansi.dim}no history${ansi.reset}`;
 
-  const body = renderChart(
-    // The float conversion is confined to plot geometry — a braille dot is
-    // one of ~200 columns, so precision beyond a double is meaningless here.
-    // Every figure a person reads off this screen comes from the header
-    // above, which formats the server's exact decimal strings.
-    points.map((p) => ({ date: p.date, value: Number(p.value) })),
-    { width, height: rows },
-  );
+  const tileRows = rows - Math.round(rows * CHART_SHARE);
+  const showTile = tileRows >= MIN_TILE_ROWS && state.data.holdings.length > 0;
+  const chartRows = showTile ? rows - tileRows : rows;
+
+  const body = renderPortfolio(toChartPoints(points), { width, height: chartRows });
+  if (showTile) body.push(...holdingsTile(state, width, tileRows));
 
   return { header: truncate(header, width), body };
+}
+
+/**
+ * The largest holdings, as a compact tile under the chart.
+ *
+ * Sorted by value and truncated to the space, with the remainder counted
+ * rather than dropped silently — a tile that shows four of an entity's
+ * thirty positions must say so, or it reads as the whole portfolio. The
+ * Holdings tab has the full list.
+ */
+function holdingsTile(state: State, width: number, rows: number): string[] {
+  const visible = state.data.holdings.filter((h) => !h.isSpam);
+  // Number() for ORDERING only — never for a figure that reaches the screen,
+  // which stays formatted from the exact string by money()/qty().
+  const sorted = [...visible].sort((a, b) => Number(b.value) - Number(a.value));
+
+  const lines = [`  ${ansi.dim}${pad("HOLDINGS", 10)}${pad("HELD IN", HELD_IN_WIDTH)}${padLeft("QUANTITY", 18)}${padLeft("VALUE", 16)}${ansi.reset}`];
+
+  // One row is kept back for the "and N more" line whenever there IS a
+  // remainder; without that the last holding shown would silently be the last
+  // one there is.
+  const slots = sorted.length > rows - 1 ? rows - 2 : rows - 1;
+  for (const h of sorted.slice(0, Math.max(0, slots))) {
+    const flag = h.hasMismatch ? `  ${ansi.yellow}mismatch${ansi.reset}` : "";
+    lines.push(
+      `  ${pad(h.symbol, 10)}${pad(heldIn(h, HELD_IN_WIDTH - 1), HELD_IN_WIDTH)}${padLeft(qty(h.quantity), 18)}${padLeft(money(h.value), 16)}${flag}`,
+    );
+  }
+
+  const remaining = sorted.length - Math.max(0, slots);
+  if (remaining > 0) lines.push(`  ${ansi.dim}and ${remaining} more — press 2${ansi.reset}`);
+
+  return lines.slice(0, rows).map((line) => truncate(line, width));
 }
 
 const HELD_IN_WIDTH = 22;

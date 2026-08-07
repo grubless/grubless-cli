@@ -1,3 +1,4 @@
+import type { PortfolioHistoryPoint } from "@grubless/api-types";
 import { ansi } from "./terminal.js";
 
 /**
@@ -74,26 +75,48 @@ class BrailleCanvas {
     }
   }
 
-  render(): string[] {
-    const lines: string[] = [];
-    for (let row = 0; row < this.rows; row++) {
-      let line = "";
-      for (let col = 0; col < this.cols; col++) {
-        const mask = this.cells[row * this.cols + col];
-        // U+2800 itself is a blank braille cell, but it is not a space — some
-        // terminals render it at a different width. Emit a real space when a
-        // cell is empty.
-        line += mask === 0 ? " " : String.fromCharCode(BRAILLE_BASE + mask);
-      }
-      lines.push(line.trimEnd());
-    }
-    return lines;
+  /**
+   * The dot bitmap for one cell, 0 when empty.
+   *
+   * Read rather than rendered here because a cell's colour depends on which
+   * SERIES owns it, which only the caller holding every layer knows. See
+   * merge().
+   */
+  maskAt(col: number, row: number): number {
+    return this.cells[row * this.cols + col];
   }
 }
 
-export interface ChartPoint {
+/**
+ * One day of the portfolio, as numbers.
+ *
+ * Numbers, not the API's decimal strings, and only here: these drive plot
+ * geometry, where a braille dot is one of a couple of hundred columns and
+ * precision beyond a double is meaningless. Every figure a person reads off
+ * the screen is formatted from the exact strings by the caller.
+ */
+export interface PortfolioPoint {
   date: string;
   value: number;
+  /** Running total of income received to this date. */
+  income: number;
+  /** Market value of open lots minus their remaining cost basis. */
+  pnl: number;
+}
+
+/**
+ * The API's decimal strings → plot geometry.
+ *
+ * The single place a portfolio figure becomes a float, so the rule that they
+ * never do anywhere else stays easy to check.
+ */
+export function toChartPoints(points: PortfolioHistoryPoint[]): PortfolioPoint[] {
+  return points.map((p) => ({
+    date: p.date,
+    value: Number(p.value),
+    income: Number(p.cumulativeIncome),
+    pnl: Number(p.unrealizedPL),
+  }));
 }
 
 export interface ChartOptions {
@@ -155,9 +178,9 @@ export function compactMoney(value: number): string {
  * user is looking for. The last point is always included, because "what is it
  * worth now" is the question the chart is usually being asked.
  */
-export function resample(points: ChartPoint[], count: number): ChartPoint[] {
+export function resample(points: PortfolioPoint[], count: number): PortfolioPoint[] {
   if (points.length <= count || count <= 1) return points;
-  const out: ChartPoint[] = [];
+  const out: PortfolioPoint[] = [];
   for (let i = 0; i < count; i++) {
     const index = Math.round((i * (points.length - 1)) / (count - 1));
     out.push(points[index]);
@@ -165,74 +188,223 @@ export function resample(points: ChartPoint[], count: number): ChartPoint[] {
   return out;
 }
 
+
 const GUTTER = 9;
+/** Rows the unrealised-P&L strip gets when it is drawn at all. */
+const PNL_ROWS = 3;
+/** Below this the strip would crowd out the main plot; it is dropped instead. */
+const MIN_HEIGHT_FOR_PNL = 10;
+
+/** One series' dots plus the colour they are drawn in. */
+interface Layer {
+  canvas: BrailleCanvas;
+  colour: string;
+}
 
 /**
- * Renders the chart, including its y-axis gutter and x-axis date labels.
+ * Renders the portfolio block: value and cumulative income on one axis, the
+ * unrealised gain/loss in its own strip below, and a date axis.
  *
  * Returns exactly `height` lines so the caller can slot it into a fixed
  * viewport without re-measuring.
+ *
+ * Value and income share one y-axis because both are dollar amounts, and a
+ * second y-scale on the same plot is the classic way to make two series look
+ * related when they aren't. The gap between the two lines is then meaningful
+ * on its own: it is the price-appreciation component — what the portfolio is
+ * worth beyond the income it received. The web chart shades exactly that band
+ * for the same reason.
+ *
+ * Unrealised P&L does NOT share that axis. It is a polarity measure — the
+ * question is which side of zero, not how it compares to portfolio value —
+ * and it crosses zero, which a zero-based magnitude axis cannot show. It gets
+ * a small zero-anchored strip instead, again matching the web chart.
  */
-export function renderChart(points: ChartPoint[], opts: ChartOptions): string[] {
+export function renderPortfolio(points: PortfolioPoint[], opts: ChartOptions): string[] {
   const { width, height } = opts;
   const paint = painter(opts.colour !== false);
   const plotCols = Math.max(1, width - GUTTER);
-  const plotRows = Math.max(1, height - 1); // last row is the date axis
 
   if (points.length === 0) {
     return [paint(ansi.dim, "No portfolio history yet."), ...Array(Math.max(0, height - 1)).fill("")];
   }
 
-  const values = points.map((p) => p.value);
-  const rawMax = Math.max(...values);
-  const rawMin = Math.min(...values);
+  // Each series is drawn only if it says something. An entity with no income
+  // would otherwise get a flat line pinned to zero, which reads as data.
+  const hasIncome = points.some((p) => p.income !== 0);
+  const hasPnl = points.some((p) => p.pnl !== 0);
 
-  // Zero-based unless the series goes negative: a portfolio chart that starts
+  // The strip is dropped, not squeezed: three rows taken from a nine-row plot
+  // costs more than the strip conveys.
+  const pnlRows = hasPnl && height >= MIN_HEIGHT_FOR_PNL ? PNL_ROWS : 0;
+  const plotRows = Math.max(1, height - 1 - pnlRows);
+
+  const dotsWide = plotCols * DOTS_X;
+  const sampled = resample(points, dotsWide);
+
+  const lines = [
+    ...mainPlot(sampled, { plotCols, plotRows, dotsWide, hasIncome, paint }),
+    ...(pnlRows > 0 ? pnlStrip(sampled, { plotCols, plotRows: pnlRows, dotsWide, paint }) : []),
+    dateAxis(points, plotCols, paint),
+  ];
+  return lines;
+}
+
+interface PlotGeometry {
+  plotCols: number;
+  plotRows: number;
+  dotsWide: number;
+  hasIncome: boolean;
+  paint: (code: string, text: string) => string;
+}
+
+function mainPlot(points: PortfolioPoint[], geo: PlotGeometry): string[] {
+  const { plotCols, plotRows, dotsWide, hasIncome, paint } = geo;
+  const series = [points.map((p) => p.value), ...(hasIncome ? [points.map((p) => p.income)] : [])];
+  const all = series.flat();
+
+  // Zero-based unless something goes negative: a portfolio chart that starts
   // its axis at the running minimum turns ordinary noise into a cliff. The
   // web chart makes the same choice.
-  const max = niceCeil(rawMax > 0 ? rawMax : 1);
+  const rawMin = Math.min(...all);
+  const max = niceCeil(Math.max(...all, 1));
   const min = rawMin < 0 ? -niceCeil(-rawMin) : 0;
   const span = max - min || 1;
 
-  const canvas = new BrailleCanvas(plotCols, plotRows);
-  const dotsWide = plotCols * DOTS_X;
   const dotsHigh = plotRows * DOTS_Y;
-
-  const sampled = resample(points, dotsWide);
   const toY = (value: number) => {
     const ratio = (value - min) / span;
     // Clamp, and invert: dot row 0 is the top of the plot.
     return Math.min(dotsHigh - 1, Math.max(0, Math.round((1 - ratio) * (dotsHigh - 1))));
   };
 
+  // Value last so it wins any cell both series land in — a merged cell can
+  // only carry one colour, and the headline series is the one to keep.
+  const layers: Layer[] = [
+    ...(hasIncome ? [{ canvas: draw(points.map((p) => p.income), toY, plotCols, plotRows, dotsWide), colour: ansi.green }] : []),
+    { canvas: draw(points.map((p) => p.value), toY, plotCols, plotRows, dotsWide), colour: ansi.cyan },
+  ].reverse();
+
+  const plot = merge(layers, plotCols, plotRows, paint);
+
+  // Y labels on the top, middle and bottom rows only. More would compete with
+  // the line for attention in a space this small.
+  return plot.map((row, i) => {
+    let label = "";
+    if (i === 0) label = compactMoney(max);
+    else if (i === plotRows - 1) label = compactMoney(min);
+    else if (i === Math.floor(plotRows / 2)) label = compactMoney(min + span / 2);
+    return paint(ansi.dim, label.padStart(GUTTER - 1)) + " " + row;
+  });
+}
+
+/**
+ * The unrealised gain/loss, on a symmetric axis anchored at zero.
+ *
+ * Symmetric rather than fitted to the data's own range: on this strip the
+ * distance from the baseline is the whole message, and an axis that rescales
+ * to the visible minimum would draw a small loss exactly like a large one.
+ *
+ * The line is yellow and the baseline dim, rather than the green/red the web
+ * chart fills with. Green is already the income series above, and a cell here
+ * holds one colour for four dot rows — so a cell straddling zero would have
+ * to claim a polarity it doesn't have. Position against a visible baseline
+ * says it without guessing; the header states the signed figure outright.
+ */
+function pnlStrip(
+  points: PortfolioPoint[],
+  geo: { plotCols: number; plotRows: number; dotsWide: number; paint: (code: string, text: string) => string },
+): string[] {
+  const { plotCols, plotRows, dotsWide, paint } = geo;
+  const values = points.map((p) => p.pnl);
+  const bound = niceCeil(Math.max(...values.map(Math.abs), 1));
+
+  const dotsHigh = plotRows * DOTS_Y;
+  const zeroDot = Math.floor((dotsHigh - 1) / 2);
+  const toY = (value: number) => {
+    const offset = (value / bound) * zeroDot;
+    return Math.min(dotsHigh - 1, Math.max(0, Math.round(zeroDot - offset)));
+  };
+
+  const baseline = new BrailleCanvas(plotCols, plotRows);
+  for (let x = 0; x < dotsWide; x++) baseline.set(x, zeroDot);
+
+  const layers: Layer[] = [
+    { canvas: draw(values, toY, plotCols, plotRows, dotsWide), colour: ansi.yellow },
+    { canvas: baseline, colour: ansi.dim },
+  ];
+
+  const plot = merge(layers, plotCols, plotRows, paint);
+  return plot.map((row, i) => {
+    // Only the extremes are labelled: the strip is three rows, and a label on
+    // every one would outweigh the line.
+    const label = i === 0 ? compactMoney(bound) : i === plotRows - 1 ? compactMoney(-bound) : "P/L";
+    return paint(ansi.dim, label.padStart(GUTTER - 1)) + " " + row;
+  });
+}
+
+/** One series onto its own canvas, joined with straight segments. */
+function draw(
+  values: number[],
+  toY: (value: number) => number,
+  plotCols: number,
+  plotRows: number,
+  dotsWide: number,
+): BrailleCanvas {
+  const canvas = new BrailleCanvas(plotCols, plotRows);
   let prevX = 0;
-  let prevY = toY(sampled[0].value);
+  let prevY = toY(values[0]);
   canvas.set(prevX, prevY);
 
-  for (let i = 1; i < sampled.length; i++) {
-    const x = sampled.length === 1 ? 0 : Math.round((i * (dotsWide - 1)) / (sampled.length - 1));
-    const y = toY(sampled[i].value);
+  for (let i = 1; i < values.length; i++) {
+    const x = Math.round((i * (dotsWide - 1)) / (values.length - 1));
+    const y = toY(values[i]);
     canvas.line(prevX, prevY, x, y);
     prevX = x;
     prevY = y;
   }
+  return canvas;
+}
 
-  const plot = canvas.render();
+/**
+ * Flattens the layers into coloured rows.
+ *
+ * A braille cell carries one colour for all eight of its dots, so where two
+ * series occupy the same cell only the first layer's dots are drawn — ORing
+ * the masks together would paint one series' dots in another's colour, which
+ * states something false. At two dots per column the collisions are rare and
+ * confined to actual crossings.
+ *
+ * Runs of the same colour share one escape pair; a per-cell pair would make
+ * a 100-column line several kilobytes of mostly escapes.
+ */
+function merge(layers: Layer[], cols: number, rows: number, paint: (code: string, text: string) => string): string[] {
+  const out: string[] = [];
 
-  // Y labels on the top, middle and bottom rows only. More would compete with
-  // the line for attention in a space this small.
-  const lines: string[] = [];
-  for (let row = 0; row < plotRows; row++) {
-    let label = "";
-    if (row === 0) label = compactMoney(max);
-    else if (row === plotRows - 1) label = compactMoney(min);
-    else if (row === Math.floor(plotRows / 2)) label = compactMoney(min + span / 2);
+  for (let row = 0; row < rows; row++) {
+    let line = "";
+    let run = "";
+    let runColour: string | null = null;
 
-    lines.push(paint(ansi.dim, label.padStart(GUTTER - 1)) + " " + paint(ansi.cyan, plot[row] ?? ""));
+    const flush = () => {
+      if (run !== "") line += runColour === null ? run : paint(runColour, run);
+      run = "";
+    };
+
+    for (let col = 0; col < cols; col++) {
+      const owner = layers.find((layer) => layer.canvas.maskAt(col, row) !== 0);
+      const colour = owner?.colour ?? null;
+      const char = owner ? String.fromCharCode(BRAILLE_BASE + owner.canvas.maskAt(col, row)) : " ";
+      if (colour !== runColour) {
+        flush();
+        runColour = colour;
+      }
+      run += char;
+    }
+    flush();
+    out.push(line.trimEnd());
   }
-
-  lines.push(dateAxis(points, plotCols, paint));
-  return lines;
+  return out;
 }
 
 /**
@@ -245,7 +417,7 @@ function painter(colour: boolean): (code: string, text: string) => string {
 }
 
 /** First / middle / last dates, positioned under the points they describe. */
-function dateAxis(points: ChartPoint[], plotCols: number, paint: (code: string, text: string) => string): string {
+function dateAxis(points: PortfolioPoint[], plotCols: number, paint: (code: string, text: string) => string): string {
   const first = points[0].date;
   const last = points[points.length - 1].date;
   const mid = points[Math.floor(points.length / 2)].date;

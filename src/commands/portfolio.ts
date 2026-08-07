@@ -1,7 +1,7 @@
 import type { Entity, PortfolioHistoryPoint } from "@grubless/api-types";
 import type { ApiClient } from "../client.js";
 import { ExitCode, json, money, out, signed, style, useColour } from "../output.js";
-import { renderChart } from "../tui/chart.js";
+import { renderPortfolio, toChartPoints } from "../tui/chart.js";
 import { resolveEntityScope } from "./entities.js";
 
 /**
@@ -67,12 +67,6 @@ function printChart(entity: Entity, points: PortfolioHistoryPoint[], showName: b
   }
 
   const width = Math.max(MIN_WIDTH, process.stdout.columns ?? DEFAULT_WIDTH);
-  const lines = renderChart(
-    // Float conversion is confined to plot geometry — a braille dot is one of
-    // a couple of hundred columns. Every figure read off this screen comes
-    // from the header above, or from --json.
-    points.map((p) => ({ date: p.date, value: Number(p.value) })),
-    { width, height: CHART_ROWS, colour: useColour },
-  );
+  const lines = renderPortfolio(toChartPoints(points), { width, height: CHART_ROWS, colour: useColour });
   for (const line of lines) out(line.trimEnd());
 }

@@ -490,6 +490,88 @@ describe("portfolio chart tab", () => {
     expect(stripAnsi(render(s, 100, 20).join("\n"))).toContain("2 days");
   });
 
+  it("puts a holdings tile under the chart, taking about 30% of the tab", () => {
+    // The web dashboard's two panels, in the same order: which way is this
+    // going, then what is it made of.
+    const s = openedState({
+      tab: "chart",
+      data: {
+        ...EMPTY_DATA,
+        history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
+        holdings: [
+          { assetId: "1", symbol: "SOL", chain: "solana", quantity: "10", value: "900", isSpam: false, hasMismatch: false, sources: [] } as unknown as Holding,
+          { assetId: "2", symbol: "BTC", chain: "bitcoin", quantity: "1", value: "100", isSpam: false, hasMismatch: false, sources: [] } as unknown as Holding,
+        ],
+      },
+    });
+    const lines = render(s, 100, 30).map(stripAnsi);
+    const text = lines.join("\n");
+    expect(text).toContain("HOLDINGS");
+    expect(text).toContain("SOL");
+
+    // The tile sits BELOW the plot, and the plot keeps the larger share.
+    const tileAt = lines.findIndex((l) => l.includes("HOLDINGS"));
+    const plotAt = lines.findIndex((l) => /[⠁-⣿]/.test(l));
+    expect(plotAt).toBeGreaterThan(-1);
+    expect(tileAt).toBeGreaterThan(plotAt);
+    const body = 30 - 4;
+    expect(tileAt - plotAt).toBeGreaterThan(body / 2);
+  });
+
+  it("orders the tile by value, largest first", () => {
+    const s = openedState({
+      tab: "chart",
+      data: {
+        ...EMPTY_DATA,
+        history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
+        holdings: [
+          { assetId: "1", symbol: "SMALL", chain: "solana", quantity: "1", value: "5", isSpam: false, hasMismatch: false, sources: [] } as unknown as Holding,
+          { assetId: "2", symbol: "BIG", chain: "solana", quantity: "1", value: "5000", isSpam: false, hasMismatch: false, sources: [] } as unknown as Holding,
+        ],
+      },
+    });
+    const lines = render(s, 100, 30).map(stripAnsi);
+    expect(lines.findIndex((l) => l.includes("BIG"))).toBeLessThan(lines.findIndex((l) => l.includes("SMALL")));
+  });
+
+  it("counts the holdings it could not fit rather than dropping them", () => {
+    // A tile showing four of thirty positions reads as the whole portfolio
+    // unless it says otherwise.
+    const many = Array.from({ length: 30 }, (_, i) => ({
+      assetId: String(i),
+      symbol: `TOK${i}`,
+      chain: "solana",
+      quantity: "1",
+      value: String(1000 - i),
+      isSpam: false,
+      hasMismatch: false,
+      sources: [],
+    })) as unknown as Holding[];
+    const s = openedState({
+      tab: "chart",
+      data: { ...EMPTY_DATA, history: history([["2026-01-01", "1"], ["2026-08-01", "2"]]), holdings: many },
+    });
+    expect(stripAnsi(render(s, 100, 30).join("\n"))).toMatch(/and \d+ more/);
+  });
+
+  it("drops the tile on a short terminal rather than showing a header with nothing under it", () => {
+    const s = openedState({
+      tab: "chart",
+      data: {
+        ...EMPTY_DATA,
+        history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
+        holdings: [
+          { assetId: "1", symbol: "SOL", chain: "solana", quantity: "10", value: "900", isSpam: false, hasMismatch: false, sources: [] } as unknown as Holding,
+        ],
+      },
+    });
+    const lines = render(s, 100, 10);
+    expect(lines).toHaveLength(10);
+    expect(stripAnsi(lines.join("\n"))).not.toContain("HOLDINGS");
+    // The status bar must survive whatever the split does.
+    expect(stripAnsi(lines[9])).toContain("r reload");
+  });
+
   it("still fills the frame when the entity has no history at all", () => {
     const s = chartState([]);
     const lines = render(s, 100, 20);
