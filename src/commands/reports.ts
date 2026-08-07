@@ -4,7 +4,8 @@ import { pipeline } from "node:stream/promises";
 import { join } from "node:path";
 import type { Entity } from "@grubless/api-types";
 import type { ApiClient } from "../client.js";
-import { CliError, ExitCode, note, style } from "../output.js";
+import { csvToTable } from "../csv.js";
+import { CliError, ExitCode, json, note, style } from "../output.js";
 import { resolveEntityScope } from "./entities.js";
 
 /**
@@ -41,6 +42,27 @@ const BUNDLE = "bundle";
 /** Reports that aren't year-scoped — the API doesn't take `?year=` for these. */
 const YEARLESS = new Set<string>(["balances-per-source"]);
 
+/**
+ * Reports the server renders as a document rather than a table: two PDFs and
+ * the ZIP. `--json` has nothing to re-frame for these — a rendered PDF has no
+ * rows — so it's refused up front with the flag that does work, rather than
+ * emitting a JSON envelope around base64 nobody asked for.
+ *
+ * Mirrors the Content-Type each route actually sets, same as REPORTS mirrors
+ * the routes themselves.
+ */
+const NOT_TABULAR = new Set<string>([BUNDLE, "ato-mytax", "division-70-trading-stock"]);
+
+/** One entity's report, re-framed. Values are the server's strings, untouched. */
+interface ReportDocument {
+  entity: { id: string; name: string };
+  report: string;
+  year: string | null;
+  columns: string[];
+  rows: Record<string, string>[];
+  notes?: string[];
+}
+
 function reportPath(entityId: string, name: string, year?: string): string {
   const route = name === BUNDLE ? "complete-tax" : name;
   const qs = YEARLESS.has(name) || !year ? "" : `?year=${encodeURIComponent(year)}`;
@@ -50,7 +72,7 @@ function reportPath(entityId: string, name: string, year?: string): string {
 export async function report(
   client: ApiClient,
   name: string,
-  opts: { entity?: string; allEntities?: boolean; year?: string; out?: string },
+  opts: { entity?: string; allEntities?: boolean; year?: string; out?: string; json?: boolean },
 ): Promise<number> {
   if (name !== BUNDLE && !(REPORTS as readonly string[]).includes(name)) {
     throw new CliError(
@@ -61,6 +83,19 @@ export async function report(
   if (!opts.year && !YEARLESS.has(name)) {
     throw new CliError("Specify --year <startYear>, e.g. --year 2025.", ExitCode.UsageError);
   }
+  if (opts.json && NOT_TABULAR.has(name)) {
+    throw new CliError(
+      `"${name}" is a ${name === BUNDLE ? "ZIP archive" : "rendered PDF"}, so there are no rows to emit as JSON.\n` +
+        `Write it to a file instead: --out <path>.`,
+      ExitCode.UsageError,
+    );
+  }
+  if (opts.json && opts.out) {
+    // Not merely redundant: --all-entities --json is ONE document, while
+    // --all-entities --out is a directory of files. Supporting both at once
+    // would need a third layout rule for the same two flags.
+    throw new CliError("--json writes to stdout; drop --out, or redirect it.", ExitCode.UsageError);
+  }
 
   // Keyed on the FLAG, not on how many entities happen to exist right now.
   // Writing several CSV bodies to one stdout would interleave them into an
@@ -68,19 +103,27 @@ export async function report(
   // entity count means the same command behaves differently for an accountant
   // who signs their second client. `--all-entities` means "directory of
   // results" on every run, from the first entity onward.
-  if (opts.allEntities && !opts.out) {
-    throw new CliError("--all-entities needs --out <dir> to write into.", ExitCode.UsageError);
+  //
+  // --json is the exception, and the reason it exists: JSON nests, so one
+  // document can hold forty clients' reports without them running together.
+  if (opts.allEntities && !opts.out && !opts.json) {
+    throw new CliError(
+      "--all-entities needs somewhere to put the results: --out <dir> to write files, or --json for one document on stdout.",
+      ExitCode.UsageError,
+    );
   }
 
   const entities = await resolveEntityScope(client, opts);
 
+  const documents: ReportDocument[] = [];
   let failures = 0;
   for (const entity of entities) {
     try {
       // Same reasoning: the per-entity subdirectory layout is a property of
       // --all-entities, not of the count, so a one-client firm gets the same
       // structure a forty-client firm does.
-      await writeOne(client, entity, name, opts, Boolean(opts.allEntities));
+      if (opts.json) documents.push(await readOne(client, entity, name, opts));
+      else await writeOne(client, entity, name, opts, Boolean(opts.allEntities));
     } catch (err) {
       // One client's report failing must not abandon the other 39. Collect
       // and report at the end with a non-zero exit — a silent partial run is
@@ -91,11 +134,39 @@ export async function report(
     }
   }
 
+  // Printed even when some entities failed, so a partial run still yields
+  // usable data — the non-zero exit and the stderr lines are what say it was
+  // partial. Shape follows the flag, not the count: --all-entities is always
+  // an array, --entity always a single object, so a script written against a
+  // one-client firm keeps working when they sign their second.
+  if (opts.json) {
+    json(opts.allEntities ? documents : (documents[0] ?? null));
+  }
+
   if (failures > 0) {
     note(style.red(`${failures} of ${entities.length} entities failed.`));
     return ExitCode.Failure;
   }
   return ExitCode.Ok;
+}
+
+/** Fetches one entity's report and re-frames it. See ../csv.ts on why here and not server-side. */
+async function readOne(
+  client: ApiClient,
+  entity: Entity,
+  name: string,
+  opts: { year?: string },
+): Promise<ReportDocument> {
+  const text = await client.getText(reportPath(entity.id, name, opts.year));
+  const { columns, rows, notes } = csvToTable(text);
+  return {
+    entity: { id: entity.id, name: entity.name },
+    report: name,
+    year: YEARLESS.has(name) ? null : (opts.year ?? null),
+    columns,
+    rows,
+    ...(notes.length > 0 ? { notes } : {}),
+  };
 }
 
 async function writeOne(

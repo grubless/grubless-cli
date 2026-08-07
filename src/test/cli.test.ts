@@ -238,10 +238,11 @@ describe("reports", () => {
     expect(res.stderr).toContain("--year");
   });
 
-  it("refuses --all-entities without --out rather than interleaving CSVs", async () => {
+  it("refuses --all-entities without --out or --json rather than interleaving CSVs", async () => {
     const res = await run(["report", "capital-gains", "--all-entities", "--year", "2025"]);
     expect(res.code).toBe(2);
     expect(res.stderr).toContain("--out");
+    expect(res.stderr).toContain("--json");
   });
 
   it("streams a CSV to stdout", async () => {
@@ -250,6 +251,103 @@ describe("reports", () => {
     // Header row of a real (empty) capital-gains report.
     expect(res.stdout.length).toBeGreaterThan(0);
     expect(res.stdout.split("\n")[0]).toContain(",");
+  });
+
+  it("emits one JSON object for a single entity", async () => {
+    const res = await run(["report", "capital-gains", "--entity", entityId, "--year", "2025", "--json"]);
+    expect(res.code).toBe(0);
+    const doc = JSON.parse(res.stdout);
+    expect(doc.entity.id).toBe(entityId);
+    expect(doc.report).toBe("capital-gains");
+    expect(doc.year).toBe("2025");
+    // Columns come from the report's own header row, so this proves the CSV
+    // was actually parsed rather than passed through.
+    expect(Array.isArray(doc.columns)).toBe(true);
+    expect(doc.columns.length).toBeGreaterThan(0);
+    expect(Array.isArray(doc.rows)).toBe(true);
+  });
+
+  it("emits an array for --all-entities, which CSV to stdout cannot do", async () => {
+    const res = await run(["report", "capital-gains", "--all-entities", "--year", "2025", "--json"]);
+    expect(res.code).toBe(0);
+    const docs = JSON.parse(res.stdout);
+    expect(Array.isArray(docs)).toBe(true);
+    expect(docs[0].entity.id).toBe(entityId);
+  });
+
+  it("keeps the shape keyed on the flag, not the entity count", async () => {
+    // A one-client firm and a forty-client firm must get the same shape from
+    // the same flags, or a script breaks the day they sign their second.
+    const single = await run(["report", "capital-gains", "--entity", entityId, "--year", "2025", "--json"]);
+    const all = await run(["report", "capital-gains", "--all-entities", "--year", "2025", "--json"]);
+    expect(Array.isArray(JSON.parse(single.stdout))).toBe(false);
+    expect(Array.isArray(JSON.parse(all.stdout))).toBe(true);
+  });
+
+  it("emits nothing but JSON on stdout, so a pipe stays parseable", async () => {
+    const res = await run(["report", "capital-gains", "--all-entities", "--year", "2025", "--json"]);
+    expect(() => JSON.parse(res.stdout)).not.toThrow();
+  });
+
+  it("refuses --json for a report that is a PDF or a ZIP", async () => {
+    for (const name of ["bundle", "ato-mytax", "division-70-trading-stock"]) {
+      const res = await run(["report", name, "--entity", entityId, "--year", "2025", "--json"]);
+      expect(res.code).toBe(2);
+      expect(res.stderr).toContain("--out");
+    }
+  });
+
+  it("refuses --json together with --out rather than guessing a layout", async () => {
+    const res = await run(["report", "capital-gains", "--entity", entityId, "--year", "2025", "--json", "--out", "x.json"]);
+    expect(res.code).toBe(2);
+    expect(res.stderr).toContain("stdout");
+  });
+});
+
+describe("portfolio", () => {
+  it("prints a chart, with no escape codes when stdout is redirected", async () => {
+    const res = await run(["portfolio", "--entity", entityId]);
+    expect(res.code).toBe(0);
+    // The scratch entity has no priced history, which is the empty case.
+    expect(res.stdout).toContain("No portfolio history yet");
+    // `run` captures a pipe, not a TTY — output.ts's second rule.
+    expect(res.stdout).not.toMatch(/\u001b/);
+  });
+
+  it("emits the series as JSON, one object per entity flag", async () => {
+    const single = await run(["portfolio", "--entity", entityId, "--json"]);
+    expect(single.code).toBe(0);
+    const doc = JSON.parse(single.stdout);
+    expect(doc.entity.id).toBe(entityId);
+    expect(Array.isArray(doc.points)).toBe(true);
+
+    const all = await run(["portfolio", "--all-entities", "--json"]);
+    expect(Array.isArray(JSON.parse(all.stdout))).toBe(true);
+  });
+
+  it("is listed in the help", async () => {
+    const res = await run(["--help"]);
+    expect(res.stdout).toContain("portfolio");
+  });
+});
+
+describe("sources sync --json", () => {
+  it("emits a result document on stdout, keeping progress on stderr", async () => {
+    // The entity has no sources, which is the "skipped" case — recorded
+    // rather than omitted, so a caller iterating clients can tell "nothing to
+    // sync" apart from "this entity never ran".
+    const res = await run(["sources", "sync", "--entity", entityId, "--all", "--json"]);
+    expect(res.code).toBe(0);
+    const doc = JSON.parse(res.stdout);
+    expect(doc.entity.id).toBe(entityId);
+    expect(doc.status).toBe("skipped");
+    expect(doc.queued).toEqual([]);
+  });
+
+  it("emits an array under --all-entities", async () => {
+    const res = await run(["sources", "sync", "--all-entities", "--all", "--json"]);
+    expect(res.code).toBe(0);
+    expect(Array.isArray(JSON.parse(res.stdout))).toBe(true);
   });
 });
 

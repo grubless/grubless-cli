@@ -2,6 +2,7 @@ import type {
   Entity,
   EntityActivity,
   Holding,
+  PortfolioHistoryPoint,
   Source,
   TaxYearSummary,
   UncategorizedTransferWarning,
@@ -74,15 +75,16 @@ export async function runTui(client: ApiClient): Promise<number> {
       // are all cheap reads, and an accountant switching between Holdings and
       // Warnings to cross-check a figure should not wait on a spinner each
       // time they press a number key.
-      const [holdings, sources, tax, zeroCost, uncategorized, activity] = await Promise.all([
+      const [holdings, sources, tax, zeroCost, uncategorized, activity, history] = await Promise.all([
         client.get<Holding[]>(`/entities/${entity.id}/holdings`),
         client.get<Source[]>(`/entities/${entity.id}/sources`),
         client.get<TaxYearSummary[]>(`/entities/${entity.id}/tax-summary`),
         client.get<ZeroCostWarning[]>(`/entities/${entity.id}/warnings/zero-cost`),
         client.get<UncategorizedTransferWarning[]>(`/entities/${entity.id}/warnings/uncategorized-transfers`),
         client.get<EntityActivity[]>(`/entities/${entity.id}/activity`),
+        client.get<PortfolioHistoryPoint[]>(`/entities/${entity.id}/portfolio-history`),
       ]);
-      const data: EntityData = { holdings, sources, tax, zeroCost, uncategorized, activity };
+      const data: EntityData = { holdings, sources, tax, zeroCost, uncategorized, activity, history };
       setState({ ...state, data, loading: false });
     } catch (err) {
       fail(err);

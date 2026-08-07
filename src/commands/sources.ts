@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import type { Entity, Source } from "@grubless/api-types";
+import type { Entity, EntityActivity, Source } from "@grubless/api-types";
 import type { ApiClient } from "../client.js";
-import { CliError, ExitCode, json, money, note, out, qty, shortDate, style, table } from "../output.js";
+import { CliError, ExitCode, heldIn, json, money, note, out, qty, shortDate, style, table } from "../output.js";
 import { resolveEntity, resolveEntityScope } from "./entities.js";
 import { DEFAULT_WAIT_TIMEOUT_MS, reportWaitResult, waitForActivity } from "./wait.js";
 
@@ -45,6 +45,24 @@ export async function sourcesList(
   return ExitCode.Ok;
 }
 
+/**
+ * What a sync run did, for `--json`.
+ *
+ * `sync` is an action, not a query, so its progress belongs on stderr and
+ * always did. What was missing was a *result* on stdout: something a script
+ * or an agent can read to find out which sources were touched and how they
+ * ended, instead of scraping the human progress lines.
+ */
+interface SyncResult {
+  entity: { id: string; name: string };
+  queued: Array<{ id: string; label: string }>;
+  full: boolean;
+  /** "skipped" when --all matched nothing; "queued" when not waiting. */
+  status: "skipped" | "queued" | "finished" | "failed";
+  /** The terminal activity rows, present only with --wait. */
+  activity?: EntityActivity[];
+}
+
 export async function sourcesSync(
   client: ApiClient,
   opts: {
@@ -55,6 +73,7 @@ export async function sourcesSync(
     full?: boolean;
     wait?: boolean;
     timeoutMinutes?: number;
+    json?: boolean;
   },
 ): Promise<number> {
   if (!opts.source && !opts.all) {
@@ -62,6 +81,7 @@ export async function sourcesSync(
   }
 
   const entities = await resolveEntityScope(client, opts);
+  const results: SyncResult[] = [];
   let worstExit: number = ExitCode.Ok;
 
   for (const entity of entities) {
@@ -73,6 +93,10 @@ export async function sourcesSync(
     if (targets.length === 0) {
       if (opts.all) {
         note(`${entity.name}: no syncable sources.`);
+        // Recorded rather than omitted: a caller iterating forty clients
+        // needs to tell "nothing to sync" apart from "this entity wasn't in
+        // the run at all".
+        results.push({ entity: { id: entity.id, name: entity.name }, queued: [], full: Boolean(opts.full), status: "skipped" });
         continue;
       }
       throw new CliError(`No source matching "${opts.source}" on ${entity.name}.`, ExitCode.UsageError);
@@ -94,25 +118,42 @@ export async function sourcesSync(
       note(`${style.dim("→")} queued ${source.label}${opts.full ? " (full resync)" : ""}`);
     }
 
+    const queued = targets.map((s) => ({ id: s.id, label: s.label }));
+    const record: SyncResult = {
+      entity: { id: entity.id, name: entity.name },
+      queued,
+      full: Boolean(opts.full),
+      status: "queued",
+    };
+    results.push(record);
+
     if (!opts.wait) continue;
 
     const result = await waitForActivity(client, entity.id, since, {
+      // Under --json the live progress lines are noise — they'd still go to
+      // stderr, but a caller piping this wants the terminal state, not a
+      // replay of it.
+      quiet: opts.json,
       timeoutMs: opts.timeoutMinutes ? opts.timeoutMinutes * 60_000 : DEFAULT_WAIT_TIMEOUT_MS,
     });
     const exit = reportWaitResult(result, `${entity.name}: sync finished`);
+    record.status = exit === ExitCode.Ok ? "finished" : "failed";
+    record.activity = result.activity;
     if (exit !== ExitCode.Ok) worstExit = exit;
   }
 
   if (!opts.wait) {
     note(style.dim("Queued. Pass --wait to block until they finish."));
   }
+  // Flag-keyed, like the rest of the CLI: --all-entities is always an array.
+  if (opts.json) json(opts.allEntities ? results : (results[0] ?? null));
   return worstExit;
 }
 
 export async function sourcesImport(
   client: ApiClient,
   filePath: string,
-  opts: { entity?: string; source?: string; wait?: boolean; timeoutMinutes?: number },
+  opts: { entity?: string; source?: string; wait?: boolean; timeoutMinutes?: number; json?: boolean },
 ): Promise<number> {
   if (!opts.source) throw new CliError("Specify --source <id> to import into.", ExitCode.UsageError);
   if (!opts.entity) throw new CliError("Specify --entity <id|name>.", ExitCode.UsageError);
@@ -135,15 +176,30 @@ export async function sourcesImport(
   await client.post(`/sources/${opts.source}/csv-import`, { fileContent });
   note(`${style.dim("→")} uploaded ${filePath} (${Math.round(fileContent.length / 1024)}KB)`);
 
+  const record = {
+    entity: { id: entity.id, name: entity.name },
+    source: opts.source,
+    file: filePath,
+    bytes: fileContent.length,
+    status: "queued" as "queued" | "finished" | "failed",
+    activity: undefined as EntityActivity[] | undefined,
+  };
+
   if (!opts.wait) {
     note(style.dim("Queued. Pass --wait to block until the import finishes."));
+    if (opts.json) json(record);
     return ExitCode.Ok;
   }
 
   const result = await waitForActivity(client, entity.id, since, {
+    quiet: opts.json,
     timeoutMs: opts.timeoutMinutes ? opts.timeoutMinutes * 60_000 : DEFAULT_WAIT_TIMEOUT_MS,
   });
-  return reportWaitResult(result, "Import finished");
+  const exit = reportWaitResult(result, "Import finished");
+  record.status = exit === ExitCode.Ok ? "finished" : "failed";
+  record.activity = result.activity;
+  if (opts.json) json(record);
+  return exit;
 }
 
 export async function holdings(
@@ -164,8 +220,13 @@ export async function holdings(
     // real position buried. --json returns everything, unfiltered.
     const visible = rows.filter((h) => !h.isSpam);
     table(visible, [
-      { header: "ASSET", value: (h) => h.symbol },
-      { header: "CHAIN", value: (h) => h.chain ?? "—" },
+      // Capped: an asset whose symbol never resolved carries its 42-char
+      // contract address, which would pad this column for every other row.
+      { header: "ASSET", value: (h) => h.symbol, maxWidth: 20 },
+      // "Held in", not "Chain" — a Hyperliquid or Kraken balance has no chain,
+      // and its source is the fact worth showing. Same resolution as the web
+      // app's holdings card. See heldIn().
+      { header: "HELD IN", value: (h) => heldIn(h) },
       { header: "QUANTITY", value: (h) => qty(h.quantity), align: "right" as const },
       { header: "VALUE", value: (h) => money(h.value), align: "right" as const },
       // The reconciliation signal: a reported-vs-calculated mismatch is the

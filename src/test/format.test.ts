@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { money, qty } from "../output.js";
+import { ellipsize, heldIn, money, qty } from "../output.js";
 
 /**
  * The formatters are string-only on purpose — the API returns exact Postgres
@@ -108,5 +108,71 @@ describe("money with exponential input", () => {
     expect(money("2e-9")).toBe("0.00");
     expect(money("1.5e3")).toBe("1,500.00");
     expect(money("-2.5e-1")).toBe("-0.25");
+  });
+});
+
+describe("heldIn", () => {
+  it("uses the chain when the asset has one", () => {
+    expect(heldIn({ chain: "solana", sources: [{ label: "sol-flex" }] })).toBe("solana");
+  });
+
+  it("falls back to the source for a chainless asset", () => {
+    // A Hyperliquid or Kraken balance is exchange-native and has NO chain —
+    // it isn't a network we failed to identify. "—" stated nothing here,
+    // while the useful fact was already in the payload.
+    expect(heldIn({ chain: null, sources: [{ label: "hyperliquid" }] })).toBe("hyperliquid");
+  });
+
+  it("lists every source when a chainless asset spans more than one", () => {
+    expect(heldIn({ chain: null, sources: [{ label: "hyperliquid" }, { label: "Kraken" }] })).toBe(
+      "hyperliquid, Kraken",
+    );
+  });
+
+  it("collapses an overflowing list to \"first +N\" rather than cutting mid-label", () => {
+    // Real row: ETH across seven sources. A raw truncation reads as one
+    // mangled name and hides how many places the asset actually lives in.
+    const out = heldIn({
+      chain: null,
+      sources: [
+        { label: "evm-ellipal (Ethereum)" },
+        { label: "Kraken-nodeintegration" },
+        { label: "evm-nano-s (Ethereum)" },
+        { label: "evm-metamask (Ethereum)" },
+      ],
+    });
+    expect(out).toMatch(/ \+3$/);
+    expect(out.length).toBeLessThanOrEqual(28);
+  });
+
+  it("falls back to an em dash only when there is genuinely nothing to say", () => {
+    expect(heldIn({ chain: null, sources: [] })).toBe("—");
+    expect(heldIn({ chain: null })).toBe("—");
+  });
+
+  it("truncates a single long label to the column so later columns stay aligned", () => {
+    const out = heldIn({ chain: null, sources: [{ label: "Kraken-nodeintegration" }] }, 12);
+    expect(out).toHaveLength(12);
+    expect(out.endsWith("…")).toBe(true);
+  });
+});
+
+describe("ellipsize", () => {
+  it("leaves text within the cap untouched", () => {
+    expect(ellipsize("USDC", 20)).toBe("USDC");
+  });
+
+  it("caps to exactly the width, ellipsis included", () => {
+    // Real case: an asset whose symbol never resolved carries its 42-char
+    // contract address, and one such row would pad ASSET for every other row.
+    const address = "0xccef6bdd7534f750eb1f494367493b5fd65c905d";
+    const out = ellipsize(address, 20);
+    expect(out).toHaveLength(20);
+    expect(out.startsWith("0xccef6bdd")).toBe(true);
+    expect(out.endsWith("…")).toBe(true);
+  });
+
+  it("returns nothing for a non-positive width", () => {
+    expect(ellipsize("abc", 0)).toBe("");
   });
 });

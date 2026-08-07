@@ -4,6 +4,7 @@ import { loadConfig } from "./config.js";
 import { CliError, ExitCode, note, out } from "./output.js";
 import { authLogin, authLogout, authWhoami } from "./commands/auth.js";
 import { entitiesList } from "./commands/entities.js";
+import { portfolio } from "./commands/portfolio.js";
 import { holdings, sourcesImport, sourcesList, sourcesSync } from "./commands/sources.js";
 import { taxSummary } from "./commands/tax.js";
 import { warnings } from "./commands/warnings.js";
@@ -37,6 +38,7 @@ COMMANDS
   import <file.csv>             Upload a CSV into a csv_import source
 
   holdings                      Current positions, with reconciliation flags
+  portfolio                     Value over time (a chart, or --json for the series)
   tax-summary                   Per-financial-year tax position
   warnings                      Data-quality issues blocking a clean filing
 
@@ -53,6 +55,8 @@ COMMON OPTIONS
 REPORT OPTIONS
   --year <startYear>            Financial year, e.g. 2025
   --out <path|dir>              Write to a file, or a directory with --all-entities
+  --json                        Rows as JSON on stdout, including --all-entities
+                                (not for bundle / ato-mytax / division-70: PDF and ZIP)
 
 SYNC / IMPORT OPTIONS
   --wait                        Block until the queued work finishes
@@ -76,6 +80,9 @@ EXIT CODES
 EXAMPLES
   # Every client's capital gains for FY2025, one directory per entity
   grubless report capital-gains --all-entities --year 2025 --out ./clients/
+
+  # The same data as one JSON document on stdout — for jq, or an LLM tool
+  grubless report capital-gains --all-entities --year 2025 --json | jq '.[].entity.name'
 
   # Pre-filing gate for CI
   grubless warnings --entity "Node Integration" --fail-on-blocking
@@ -195,11 +202,15 @@ async function main(argv: string[]): Promise<number> {
         source: values.source,
         wait: values.wait,
         timeoutMinutes,
+        json: values.json,
       });
     }
 
     case "holdings":
       return holdings(client, common);
+
+    case "portfolio":
+      return portfolio(client, common);
 
     case "tax-summary":
       return taxSummary(client, { ...common, year: values.year });

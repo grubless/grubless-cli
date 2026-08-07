@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Entity, Holding, Source, TaxYearSummary } from "@grubless/api-types";
+import type { Entity, Holding, PortfolioHistoryPoint, Source, TaxYearSummary } from "@grubless/api-types";
 import { decodeKeys, stripAnsi, truncate, visibleWidth } from "../tui/terminal.js";
 import { EMPTY_DATA, initialState, reduce, rowCount, type State } from "../tui/state.js";
 import { render, viewportRows } from "../tui/views.js";
@@ -28,7 +28,10 @@ function stateWithEntities(count: number): State {
 
 function openedState(overrides: Partial<State> = {}): State {
   const base = stateWithEntities(3);
-  return { ...base, selectedEntity: base.entities[0], loading: false, ...overrides };
+  // Holdings, not the real landing tab (the chart) — most of what follows is
+  // about list behaviour, and the chart is deliberately not a list. Chart
+  // tests set `tab` explicitly.
+  return { ...base, selectedEntity: base.entities[0], tab: "holdings", loading: false, ...overrides };
 }
 
 describe("key decoding", () => {
@@ -157,18 +160,27 @@ describe("tabs", () => {
     s = reduce(s, KEY("tab"), 10).state;
     expect(s.tab).toBe("sources");
     s = reduce(s, KEY("tab"), 10).state;
+    expect(s.tab).toBe("chart");
+    s = reduce(s, KEY("tab"), 10).state;
     expect(s.tab).toBe("holdings");
   });
 
+  it("opens on the portfolio chart", () => {
+    // The landing tab, matching the web dashboard: the first question about
+    // an entity is which way it's going, and that's a shape, not a table.
+    expect(initialState().tab).toBe("chart");
+  });
+
   it("jumps directly with number keys", () => {
-    const s = reduce(openedState(), KEY("3"), 10).state;
+    const s = reduce(openedState(), KEY("4"), 10).state;
     expect(s.tab).toBe("tax");
   });
 
   it("resets the cursor when the tab changes", () => {
     // Carrying a row-8 cursor from a 40-row list into a 3-row one would put
     // the highlight off-screen.
-    const s = reduce({ ...openedState(), cursor: 8, offset: 4 }, KEY("2"), 10).state;
+    const s = reduce({ ...openedState(), cursor: 8, offset: 4 }, KEY("3"), 10).state;
+    expect(s.tab).toBe("warnings");
     expect(s.cursor).toBe(0);
     expect(s.offset).toBe(0);
   });
@@ -376,5 +388,116 @@ describe("viewportRows", () => {
   it("never returns less than one row, however small the terminal", () => {
     expect(viewportRows(1)).toBe(1);
     expect(viewportRows(0)).toBe(1);
+  });
+});
+
+describe("holdings \"held in\" column", () => {
+  const holding = (chain: string | null, sources: Array<{ label: string }>): Holding =>
+    ({
+      assetId: "a",
+      symbol: "USDC",
+      chain,
+      imageUrl: null,
+      quantity: "100",
+      value: "100",
+      hasMismatch: false,
+      isSpam: false,
+      sources,
+    }) as Holding;
+
+  it("shows the source for a chainless holding instead of a dash", () => {
+    const s = openedState({
+      data: { ...EMPTY_DATA, holdings: [holding(null, [{ label: "hyperliquid" }])] },
+    });
+    const text = stripAnsi(render(s, 120, 24).join("\n"));
+    expect(text).toContain("HELD IN");
+    expect(text).toContain("hyperliquid");
+  });
+
+  it("still shows the chain when there is one", () => {
+    const s = openedState({
+      data: { ...EMPTY_DATA, holdings: [holding("solana", [{ label: "sol-flex" }])] },
+    });
+    expect(stripAnsi(render(s, 120, 24).join("\n"))).toContain("solana");
+  });
+
+  it("keeps columns aligned when a source label is long", () => {
+    const s = openedState({
+      data: {
+        ...EMPTY_DATA,
+        holdings: [
+          holding(null, [{ label: "Kraken-nodeintegration-a-very-long-label" }]),
+          holding("solana", [{ label: "x" }]),
+        ],
+      },
+    });
+    const lines = render(s, 120, 24).map(stripAnsi);
+    const rows = lines.filter((l) => l.includes("USDC"));
+    expect(rows).toHaveLength(2);
+    // The QUANTITY column must start at the same offset on both rows — a
+    // long label shoving it right is exactly what the truncation prevents.
+    expect(rows[0].indexOf("100")).toBe(rows[1].indexOf("100"));
+  });
+});
+
+describe("portfolio chart tab", () => {
+  const history = (points: Array<[string, string]>): PortfolioHistoryPoint[] =>
+    points.map(([date, value]) => ({ date, value, cumulativeIncome: "0", unrealizedPL: "0" }));
+
+  const chartState = (data: PortfolioHistoryPoint[]): State =>
+    openedState({ tab: "chart", data: { ...EMPTY_DATA, history: data } });
+
+  it("draws the series and dates it", () => {
+    const s = chartState(history([["2026-01-01", "1000"], ["2026-06-01", "50000"], ["2026-08-01", "42000"]]));
+    const text = stripAnsi(render(s, 100, 20).join("\n"));
+    expect(text).toMatch(/[⠁-⣿]/);
+    expect(text).toContain("2026-01-01");
+  });
+
+  it("puts today's exact figures in the header, formatted from the decimal strings", () => {
+    const s = chartState([
+      { date: "2026-08-07", value: "721022.174", cumulativeIncome: "4321.5", unrealizedPL: "12345.67" },
+    ]);
+    const text = stripAnsi(render(s, 120, 20).join("\n"));
+    expect(text).toContain("VALUE 721,022.17");
+    expect(text).toContain("INCOME 4,321.50");
+  });
+
+  it("signs an unrealised gain, so the figure reads as a direction", () => {
+    const gain = chartState([{ date: "2026-08-07", value: "10", cumulativeIncome: "0", unrealizedPL: "12345.67" }]);
+    expect(stripAnsi(render(gain, 120, 20).join("\n"))).toContain("UNREALISED +12,345.67");
+
+    const loss = chartState([{ date: "2026-08-07", value: "10", cumulativeIncome: "0", unrealizedPL: "-987.65" }]);
+    expect(stripAnsi(render(loss, 120, 20).join("\n"))).toContain("UNREALISED -987.65");
+
+    // Zero stays bare: "+0.00" claims a gain that isn't there.
+    const flat = chartState([{ date: "2026-08-07", value: "10", cumulativeIncome: "0", unrealizedPL: "0" }]);
+    expect(stripAnsi(render(flat, 120, 20).join("\n"))).toContain("UNREALISED 0.00");
+  });
+
+  it("never highlights a row of the plot", () => {
+    // The chart isn't a list. With rowCount 0 the cursor sits at 0, and the
+    // list path would paint a reverse-video bar across the top of the plot.
+    const s = chartState(history([["2026-01-01", "1"], ["2026-01-02", "2"]]));
+    // Body only — the tab bar reverses the active tab, legitimately.
+    const body = render(s, 100, 20).slice(3, -1);
+    expect(body.join("\n")).not.toContain("[7m");
+    expect(rowCount(s)).toBe(0);
+  });
+
+  it("counts days rather than rows in the status bar", () => {
+    const s = chartState(history([["2026-01-01", "1"], ["2026-01-02", "2"]]));
+    expect(stripAnsi(render(s, 100, 20).join("\n"))).toContain("2 days");
+  });
+
+  it("still fills the frame when the entity has no history at all", () => {
+    const s = chartState([]);
+    const lines = render(s, 100, 20);
+    expect(lines).toHaveLength(20);
+    const text = stripAnsi(lines.join("\n"));
+    expect(text).toContain("No portfolio history yet");
+    // The status bar is the last line and must survive — the chart sizing
+    // itself wrong is exactly how it would get pushed off-screen.
+    expect(stripAnsi(lines[19])).toContain("r reload");
   });
 });

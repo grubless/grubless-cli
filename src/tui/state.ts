@@ -2,6 +2,7 @@ import type {
   Entity,
   EntityActivity,
   Holding,
+  PortfolioHistoryPoint,
   Source,
   TaxYearSummary,
   ZeroCostWarning,
@@ -21,15 +22,29 @@ import type {
  * terminal.ts and are thin enough to verify by eye.
  */
 
-export const TABS = ["holdings", "warnings", "tax", "sources"] as const;
+// Portfolio leads, as it does on the web dashboard: the first question is
+// "how is this entity doing", and the answer is a shape, not a table. The
+// tables are one keypress away either side.
+export const TABS = ["chart", "holdings", "warnings", "tax", "sources"] as const;
 export type Tab = (typeof TABS)[number];
 
 export const TAB_LABEL: Record<Tab, string> = {
+  chart: "Portfolio",
   holdings: "Holdings",
   warnings: "Warnings",
   tax: "Tax",
   sources: "Sources",
 };
+
+/**
+ * Tabs whose body is a scrollable list of rows. The chart is not — it is one
+ * picture sized to the window, so cursor movement and scrolling mean nothing
+ * there and highlighting a "row" of it would just paint a bar across the
+ * plot. See `rowCount` and `entityLines`.
+ */
+export function isList(tab: Tab): boolean {
+  return tab !== "chart";
+}
 
 export interface EntityData {
   holdings: Holding[];
@@ -38,6 +53,7 @@ export interface EntityData {
   zeroCost: ZeroCostWarning[];
   uncategorized: UncategorizedTransferWarning[];
   activity: EntityActivity[];
+  history: PortfolioHistoryPoint[];
 }
 
 export const EMPTY_DATA: EntityData = {
@@ -47,6 +63,7 @@ export const EMPTY_DATA: EntityData = {
   zeroCost: [],
   uncategorized: [],
   activity: [],
+  history: [],
 };
 
 export interface State {
@@ -77,7 +94,7 @@ export function initialState(): State {
     entities: [],
     entityIndex: 0,
     selectedEntity: null,
-    tab: "holdings",
+    tab: "chart",
     offset: 0,
     cursor: 0,
     data: EMPTY_DATA,
@@ -94,6 +111,10 @@ export function initialState(): State {
 export function rowCount(state: State): number {
   if (!state.selectedEntity) return state.entities.length;
   switch (state.tab) {
+    // Not a list — nothing to scroll through, and a cursor over a plot is
+    // meaningless. See isList().
+    case "chart":
+      return 0;
     case "holdings":
       return state.data.holdings.filter((h) => !h.isSpam).length;
     case "warnings":

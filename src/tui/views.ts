@@ -1,6 +1,7 @@
-import { money, qty } from "../output.js";
+import { heldIn, money, qty, signed } from "../output.js";
+import { renderChart } from "./chart.js";
 import { ansi, pad, truncate, visibleWidth } from "./terminal.js";
-import { TABS, TAB_LABEL, rowCount, type State, type Tab } from "./state.js";
+import { TABS, TAB_LABEL, isList, rowCount, type State, type Tab } from "./state.js";
 
 /**
  * Rendering — pure functions from state to `string[]`.
@@ -88,12 +89,16 @@ function entityLines(state: State, width: number, height: number): string[] {
   lines.push(tabBar(state.tab));
 
   const rows = viewportRows(height);
-  const { header, body } = tabContent(state, width);
+  const { header, body } = tabContent(state, width, rows);
 
   lines.push(`${ansi.dim}${header}${ansi.reset}`);
 
   if (state.loading) {
     lines.push(`${ansi.dim}Loading…${ansi.reset}`);
+  } else if (!isList(state.tab)) {
+    // Already sized to the viewport, and not a list: no scroll offset to
+    // apply and no row to highlight. See isList().
+    lines.push(...body);
   } else if (body.length === 0) {
     lines.push(`${ansi.dim}Nothing here.${ansi.reset}`);
   } else {
@@ -105,8 +110,14 @@ function entityLines(state: State, width: number, height: number): string[] {
   }
 
   while (lines.length < height - 1) lines.push("");
-  lines.push(statusBar(state, plural(rowCount(state), "row", "rows"), "↹ tab · r reload · s sync · ? help · q back"));
+  lines.push(statusBar(state, countLabel(state), "↹ tab · r reload · s sync · ? help · q back"));
   return lines;
+}
+
+/** What the status bar counts differs by tab — the chart measures days, not rows. */
+function countLabel(state: State): string {
+  if (state.tab === "chart") return plural(state.data.history.length, "day", "days");
+  return plural(rowCount(state), "row", "rows");
 }
 
 function tabBar(active: Tab): string {
@@ -116,8 +127,10 @@ function tabBar(active: Tab): string {
   }).join("");
 }
 
-function tabContent(state: State, width: number): { header: string; body: string[] } {
+function tabContent(state: State, width: number, rows: number): { header: string; body: string[] } {
   switch (state.tab) {
+    case "chart":
+      return chartTab(state, width, rows);
     case "holdings":
       return holdingsTab(state, width);
     case "warnings":
@@ -129,12 +142,52 @@ function tabContent(state: State, width: number): { header: string; body: string
   }
 }
 
+/**
+ * Portfolio value over time, plus where it stands today.
+ *
+ * The header carries the three figures the plot cannot: today's value, the
+ * paper gain/loss on what's still held, and income received to date. The
+ * line answers "which way, and how fast"; the header answers "how much".
+ *
+ * No colour in the header — `entityLines` wraps it in `dim`, and an embedded
+ * `reset` would end the dim run for everything after it on that row.
+ */
+function chartTab(state: State, width: number, rows: number): { header: string; body: string[] } {
+  const points = state.data.history;
+  const last = points[points.length - 1];
+
+  const header = last
+    ? `  ${last.date}   VALUE ${money(last.value)}   UNREALISED ${signed(last.unrealizedPL)}   INCOME ${money(last.cumulativeIncome)}`
+    : "  no history";
+
+  const body = renderChart(
+    // The float conversion is confined to plot geometry — a braille dot is
+    // one of ~200 columns, so precision beyond a double is meaningless here.
+    // Every figure a person reads off this screen comes from the header
+    // above, which formats the server's exact decimal strings.
+    points.map((p) => ({ date: p.date, value: Number(p.value) })),
+    { width, height: rows },
+  );
+
+  return { header: truncate(header, width), body };
+}
+
+const HELD_IN_WIDTH = 22;
+
 function holdingsTab(state: State, width: number): { header: string; body: string[] } {
   const rows = state.data.holdings.filter((h) => !h.isSpam);
-  const header = `  ${pad("ASSET", 10)}${pad("CHAIN", 10)}${padLeft("QUANTITY", 18)}${padLeft("VALUE", 16)}`;
+  // "Held in", not "Chain": a Hyperliquid or Kraken balance is exchange-native
+  // and has no chain at all, so "—" stated nothing where the useful fact —
+  // which source holds it — was already in the payload. Matches the web app's
+  // holdings card. See heldIn().
+  const header = `  ${pad("ASSET", 10)}${pad("HELD IN", HELD_IN_WIDTH)}${padLeft("QUANTITY", 18)}${padLeft("VALUE", 16)}`;
   const body = rows.map((h) => {
     const flag = h.hasMismatch ? `  ${ansi.yellow}mismatch${ansi.reset}` : "";
-    return `  ${pad(h.symbol, 10)}${pad(h.chain ?? "—", 10)}${padLeft(qty(h.quantity), 18)}${padLeft(money(h.value), 16)}${flag}`;
+    // Truncated to the column, not just padded — a source label like
+    // "Kraken-nodeintegration" would otherwise shove every later column out
+    // of alignment on that one row.
+    const where = heldIn(h, HELD_IN_WIDTH - 1);
+    return `  ${pad(h.symbol, 10)}${pad(where, HELD_IN_WIDTH)}${padLeft(qty(h.quantity), 18)}${padLeft(money(h.value), 16)}${flag}`;
   });
   return { header: truncate(header, width), body };
 }
@@ -207,7 +260,7 @@ function helpLines(): string[] {
     "  Home End       jump to first / last",
     "  ⏎              open the selected entity",
     "  ↹ / ← → / h l  switch tab",
-    "  1..4           jump to a tab",
+    "  1..5           jump to a tab",
     "  r              reload this entity",
     "  s              sync every enabled source, and watch it",
     "  q / Esc        back to entities, or quit from there",

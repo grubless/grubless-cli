@@ -37,7 +37,8 @@ export class CliError extends Error {
   }
 }
 
-const useColour = process.stdout.isTTY && !process.env.NO_COLOR;
+/** Rule 2 above, as a value — exported for renderers that emit their own escapes. */
+export const useColour = Boolean(process.stdout.isTTY && !process.env.NO_COLOR);
 
 const codes = {
   dim: "\u001b[2m",
@@ -74,11 +75,29 @@ export function json(value: unknown): void {
   out(JSON.stringify(value, null, 2));
 }
 
+/** Applies a column's optional width cap to one cell. */
+function capped(text: string, maxWidth?: number): string {
+  return maxWidth ? ellipsize(text, maxWidth) : text;
+}
+
 export interface Column<T> {
   header: string;
   value: (row: T) => string;
   /** Right-align — for numbers, where a ragged decimal column is unreadable. */
   align?: "left" | "right";
+  /**
+   * Cap on the column's width, ellipsizing anything longer.
+   *
+   * Opt-in per column rather than a global default, because some columns must
+   * never be truncated: a source id is a 36-character uuid that exists to be
+   * copied into the next command, and a clipped one is worse than a wide
+   * table.
+   *
+   * Where it earns its keep: an asset whose symbol never resolved carries its
+   * 42-character contract address instead, and a single such row would
+   * otherwise pad ASSET to 42 columns for every other row on screen.
+   */
+  maxWidth?: number;
 }
 
 /**
@@ -89,8 +108,10 @@ export interface Column<T> {
 export function table<T>(rows: T[], columns: Column<T>[]): void {
   if (rows.length === 0) return;
 
-  const cells = rows.map((row) => columns.map((c) => c.value(row)));
-  const widths = columns.map((c, i) => Math.max(c.header.length, ...cells.map((r) => r[i].length)));
+  const cells = rows.map((row) => columns.map((c, i) => capped(c.value(row), columns[i].maxWidth)));
+  const widths = columns.map((c, i) =>
+    Math.min(Math.max(c.header.length, ...cells.map((r) => r[i].length)), c.maxWidth ?? Number.POSITIVE_INFINITY),
+  );
 
   const pad = (text: string, width: number, align: "left" | "right" = "left") =>
     align === "right" ? text.padStart(width) : text.padEnd(width);
@@ -174,6 +195,23 @@ export function money(value: string | null | undefined): string {
 }
 
 /**
+ * Money with an explicit "+" on a gain.
+ *
+ * For a figure standing on its own — an unrealised P/L above a chart, say —
+ * where there's no column of neighbours to compare against and an unsigned
+ * number reads as a magnitude rather than a direction. Zero stays bare:
+ * "+0.00" claims a gain that isn't there.
+ *
+ * Not the default for `money()`, which fills table columns where a leading
+ * "+" on every row is noise.
+ */
+export function signed(value: string | null | undefined): string {
+  const text = money(value);
+  if (text.startsWith("-") || !/[1-9]/.test(text)) return text;
+  return `+${text}`;
+}
+
+/**
  * Quantities: trailing zeros trimmed, capped at 8 decimals.
  *
  * 8 rather than 2 because crypto amounts genuinely need them (a satoshi is
@@ -201,6 +239,55 @@ function sign(negative: boolean): string {
 
 function group(digits: string): string {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
+ * Where a holding actually lives — a chain when it has one, otherwise the
+ * source(s) holding it.
+ *
+ * A chainless asset is not a network we failed to identify: Kraken and
+ * Hyperliquid balances are exchange-native and have no on-chain presence at
+ * all. Printing "—" in a CHAIN column states nothing, when the genuinely
+ * distinguishing fact — that this USDC is on Hyperliquid — is right there in
+ * `sources`. The web app's holdings card resolves it the same way and heads
+ * the column "Held in" for the same reason; this keeps the two surfaces
+ * saying the same thing.
+ *
+ * Chain slugs stay lowercase rather than being prettified through a display
+ * map. The web app keeps such a map, but duplicating 30+ entries here for
+ * cosmetics would be a second thing to keep in sync, and a terminal is a
+ * place where a greppable `solana` beats a title-cased one.
+ */
+export function heldIn(
+  holding: { chain: string | null; sources?: Array<{ label: string }> },
+  maxWidth = 28,
+): string {
+  if (holding.chain) return ellipsize(holding.chain, maxWidth);
+
+  const labels = holding.sources?.map((s) => s.label) ?? [];
+  if (labels.length === 0) return "—";
+
+  const joined = labels.join(", ");
+  if (joined.length <= maxWidth) return joined;
+
+  // A single over-long label just gets ellipsized — the "+N" form below would
+  // render a meaningless " +0".
+  if (labels.length === 1) return ellipsize(labels[0], maxWidth);
+
+  // Overflow becomes "first +N", never a mid-label cut. A real row here holds
+  // ETH across seven sources; "evm-ellipal (Ethereum), Kraken-nodeinte…" is
+  // both unreadable and misleading about how many places it lives in, whereas
+  // the count is the fact you actually want at a glance. --json has the full
+  // list either way.
+  const extra = labels.length - 1;
+  const suffix = ` +${extra}`;
+  return ellipsize(labels[0], Math.max(1, maxWidth - suffix.length)) + suffix;
+}
+
+/** Hard-truncates plain text so a following column stays aligned. */
+export function ellipsize(text: string, maxWidth: number): string {
+  if (maxWidth <= 0) return "";
+  return text.length <= maxWidth ? text : text.slice(0, maxWidth - 1) + "…";
 }
 
 /** ISO timestamp → a short local date, or an em dash for null. */

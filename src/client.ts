@@ -146,6 +146,20 @@ export class ApiClient {
   }
 
   /**
+   * A text body, for the report endpoints under `--json` — the CSV has to be
+   * whole before it can be re-framed, so there's nothing to stream.
+   *
+   * Buffering is fine here and not elsewhere: `--json` produces one JSON
+   * document, which cannot be emitted incrementally anyway. `--out` keeps the
+   * streaming path below, which is the one that matters for a large
+   * transaction history.
+   */
+  async getText(path: string): Promise<string> {
+    const res = await this.send("GET", path, { headers: { accept: "text/csv, */*" } });
+    return res.text();
+  }
+
+  /**
    * Report endpoints return `text/csv` (or a ZIP for the bundle), not JSON.
    * Returned as a stream so `--out` can write straight to disk — the
    * complete-tax bundle is a ZIP built by `archiver`, and buffering an entity's
