@@ -1,6 +1,7 @@
 import type {
   Entity,
   EntityActivity,
+  EntityTaxSettings,
   Holding,
   PortfolioHistoryPoint,
   Source,
@@ -8,6 +9,7 @@ import type {
   ZeroCostWarning,
   UncategorizedTransferWarning,
 } from "@grubless/api-types";
+import { RANGES, type RangeKey } from "../range.js";
 
 /**
  * TUI state, and the pure reducers over it.
@@ -54,6 +56,8 @@ export interface EntityData {
   uncategorized: UncategorizedTransferWarning[];
   activity: EntityActivity[];
   history: PortfolioHistoryPoint[];
+  /** Null until loaded, or when the entity has no settings row. */
+  settings: EntityTaxSettings | null;
 }
 
 export const EMPTY_DATA: EntityData = {
@@ -64,6 +68,7 @@ export const EMPTY_DATA: EntityData = {
   uncategorized: [],
   activity: [],
   history: [],
+  settings: null,
 };
 
 export interface State {
@@ -87,6 +92,8 @@ export interface State {
   syncing: boolean;
   showHelp: boolean;
   quit: boolean;
+  /** Time range for the portfolio chart. See ../range.ts on the default. */
+  range: RangeKey;
   /**
    * Spinner frame counter, advanced by the app's timer rather than by any
    * keypress — which is why the reducer neither reads nor writes it. A load
@@ -110,6 +117,10 @@ export function initialState(): State {
     syncing: false,
     showHelp: false,
     quit: false,
+    // The web dashboard's default. Opening on all-time made the same entity
+    // look different in the two surfaces — an early funding step reads as a
+    // cliff that flattens everything after it.
+    range: "fy",
     tick: 0,
   };
 }
@@ -244,6 +255,14 @@ export function reduce(state: State, key: KeyEvent, viewportRows: number): { sta
       if (!state.selectedEntity) return { state: next, action: { type: "none" } };
       return { state: switchTab(next, -1), action: { type: "none" } };
 
+    // Range stepping, on the chart tab only. `[`/`]` rather than ←/→, which
+    // already switch tabs, and rather than the number keys, which jump to one.
+    // The strip above the plot shows where you are, so this needs no mode.
+    case "[":
+    case "]":
+      if (!state.selectedEntity || state.tab !== "chart") return { state: next, action: { type: "none" } };
+      return { state: { ...next, range: stepRange(state.range, key.name === "]" ? 1 : -1) }, action: { type: "none" } };
+
     case "r":
       if (!state.selectedEntity) return { state: next, action: { type: "none" } };
       return { state: { ...next, loading: true, message: null }, action: { type: "reload" } };
@@ -270,6 +289,12 @@ export function reduce(state: State, key: KeyEvent, viewportRows: number): { sta
       return { state: next, action: { type: "none" } };
     }
   }
+}
+
+/** Clamped, not wrapped: stepping off "ALL" onto "24H" is disorienting. */
+function stepRange(current: RangeKey, delta: number): RangeKey {
+  const index = RANGES.indexOf(current);
+  return RANGES[Math.min(RANGES.length - 1, Math.max(0, index + delta))];
 }
 
 function switchTab(state: State, delta: number): State {

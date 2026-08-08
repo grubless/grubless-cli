@@ -1,6 +1,7 @@
 import type {
   Entity,
   EntityActivity,
+  EntityTaxSettings,
   Holding,
   PortfolioHistoryPoint,
   Source,
@@ -103,7 +104,7 @@ export async function runTui(client: ApiClient): Promise<number> {
       // are all cheap reads, and an accountant switching between Holdings and
       // Warnings to cross-check a figure should not wait on a spinner each
       // time they press a number key.
-      const [holdings, sources, tax, zeroCost, uncategorized, activity, history] = await Promise.all([
+      const [holdings, sources, tax, zeroCost, uncategorized, activity, history, settings] = await Promise.all([
         client.get<Holding[]>(`/entities/${entity.id}/holdings`),
         client.get<Source[]>(`/entities/${entity.id}/sources`),
         client.get<TaxYearSummary[]>(`/entities/${entity.id}/tax-summary`),
@@ -111,8 +112,13 @@ export async function runTui(client: ApiClient): Promise<number> {
         client.get<UncategorizedTransferWarning[]>(`/entities/${entity.id}/warnings/uncategorized-transfers`),
         client.get<EntityActivity[]>(`/entities/${entity.id}/activity`),
         client.get<PortfolioHistoryPoint[]>(`/entities/${entity.id}/portfolio-history`),
+        // The financial-year start month, for the "FY" range. 404s on an
+        // entity with no settings row, which is not an error worth failing the
+        // whole screen over — the chart falls back to the AU default and every
+        // other range is unaffected.
+        client.get<EntityTaxSettings>(`/entities/${entity.id}/tax-settings`).catch(() => null),
       ]);
-      const data: EntityData = { holdings, sources, tax, zeroCost, uncategorized, activity, history };
+      const data: EntityData = { holdings, sources, tax, zeroCost, uncategorized, activity, history, settings };
       setState({ ...state, data, loading: false });
     } catch (err) {
       fail(err);

@@ -63,6 +63,9 @@ SYNC / IMPORT OPTIONS
   --full                        Re-fetch entire history, ignoring last sync
   --timeout <minutes>           How long --wait waits (default 35)
 
+PORTFOLIO OPTIONS
+  --range <key>                 24h, 1w, 1m, 3m, 6m, 1y, fy, all (default all)
+
 WARNINGS OPTIONS
   --fail-on-blocking            Exit ${ExitCode.BlockingWarnings} if blocking issues exist (CI gate)
 
@@ -100,6 +103,7 @@ const OPTIONS = {
   wait: { type: "boolean" },
   timeout: { type: "string" },
   year: { type: "string" },
+  range: { type: "string" },
   out: { type: "string" },
   token: { type: "string" },
   "api-url": { type: "string" },
@@ -210,7 +214,7 @@ async function main(argv: string[]): Promise<number> {
       return holdings(client, common);
 
     case "portfolio":
-      return portfolio(client, common);
+      return portfolio(client, { ...common, range: values.range });
 
     case "tax-summary":
       return taxSummary(client, { ...common, year: values.year });

@@ -328,6 +328,28 @@ describe("portfolio", () => {
   it("is listed in the help", async () => {
     const res = await run(["--help"]);
     expect(res.stdout).toContain("portfolio");
+    expect(res.stdout).toContain("--range");
+  });
+
+  it("narrows the series with --range, and says which range it used", async () => {
+    // Echoed back because a consumer handed a filtered array with no record of
+    // the filter cannot tell a quiet year from a narrow window.
+    const res = await run(["portfolio", "--entity", entityId, "--range", "1m", "--json"]);
+    expect(res.code).toBe(0);
+    expect(JSON.parse(res.stdout).range).toBe("1m");
+  });
+
+  it("defaults to the whole series on the command line", async () => {
+    // Unlike the TUI and the web dashboard, which open on the current FY: a
+    // command reading into a pipe hands over everything unless told otherwise.
+    const res = await run(["portfolio", "--entity", entityId, "--json"]);
+    expect(JSON.parse(res.stdout).range).toBe("all");
+  });
+
+  it("rejects an unknown range and lists the real ones", async () => {
+    const res = await run(["portfolio", "--entity", entityId, "--range", "2w"]);
+    expect(res.code).toBe(2);
+    expect(res.stderr).toContain("24h");
   });
 });
 

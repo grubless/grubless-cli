@@ -444,8 +444,11 @@ describe("portfolio chart tab", () => {
   const history = (points: Array<[string, string]>): PortfolioHistoryPoint[] =>
     points.map(([date, value]) => ({ date, value, cumulativeIncome: "0", unrealizedPL: "0" }));
 
+  // range "all" throughout: these are about what the dashboard DRAWS, and the
+  // default range would filter fixed historical dates out of the window as
+  // soon as the test data aged past it. The range itself is covered below.
   const chartState = (data: PortfolioHistoryPoint[]): State =>
-    openedState({ tab: "chart", data: { ...EMPTY_DATA, history: data } });
+    openedState({ tab: "chart", range: "all", data: { ...EMPTY_DATA, history: data } });
 
   it("draws the series and dates it", () => {
     const s = chartState(history([["2026-01-01", "1000"], ["2026-06-01", "50000"], ["2026-08-01", "42000"]]));
@@ -479,9 +482,11 @@ describe("portfolio chart tab", () => {
     // The chart isn't a list. With rowCount 0 the cursor sits at 0, and the
     // list path would paint a reverse-video bar across the top of the plot.
     const s = chartState(history([["2026-01-01", "1"], ["2026-01-02", "2"]]));
-    // Body only — the tab bar reverses the active tab, legitimately.
-    const body = render(s, 100, 20).slice(3, -1);
-    expect(body.join("\n")).not.toContain("[7m");
+    // The plot only. Two other things reverse legitimately: the tab bar marks
+    // the active tab, and the range strip marks the selected window — both sit
+    // above the plot, so they're sliced off rather than exempted.
+    const plot = render(s, 100, 20).slice(4, -1);
+    expect(plot.join("\n")).not.toContain("[7m");
     expect(rowCount(s)).toBe(0);
   });
 
@@ -495,6 +500,7 @@ describe("portfolio chart tab", () => {
     // going, then what is it made of.
     const s = openedState({
       tab: "chart",
+      range: "all",
       data: {
         ...EMPTY_DATA,
         history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
@@ -521,6 +527,7 @@ describe("portfolio chart tab", () => {
   it("orders the tile by value, largest first", () => {
     const s = openedState({
       tab: "chart",
+      range: "all",
       data: {
         ...EMPTY_DATA,
         history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
@@ -549,6 +556,7 @@ describe("portfolio chart tab", () => {
     })) as unknown as Holding[];
     const s = openedState({
       tab: "chart",
+      range: "all",
       data: { ...EMPTY_DATA, history: history([["2026-01-01", "1"], ["2026-08-01", "2"]]), holdings: many },
     });
     expect(stripAnsi(render(s, 100, 30).join("\n"))).toMatch(/and \d+ more/);
@@ -557,6 +565,7 @@ describe("portfolio chart tab", () => {
   it("drops the tile on a short terminal rather than showing a header with nothing under it", () => {
     const s = openedState({
       tab: "chart",
+      range: "all",
       data: {
         ...EMPTY_DATA,
         history: history([["2026-01-01", "1000"], ["2026-08-01", "5000"]]),
@@ -605,5 +614,60 @@ describe("loading spinner", () => {
   it("spins on an entity's tabs too, not only the picker", () => {
     const s = openedState({ loading: true, tick: 2 });
     expect(stripAnsi(render(s, 80, 24).join("\n"))).toMatch(/\S Loading…/);
+  });
+});
+
+describe("portfolio time range", () => {
+  const spanning = [
+    { date: "2020-01-01", value: "1000", cumulativeIncome: "0", unrealizedPL: "0" },
+    { date: "2026-08-01", value: "500000", cumulativeIncome: "0", unrealizedPL: "0" },
+  ];
+
+  it("opens on the financial year, as the web dashboard does", () => {
+    // Opening on all-time made the same entity look different in the two
+    // surfaces: an early funding step reads as a cliff that flattens
+    // everything after it.
+    expect(initialState().range).toBe("fy");
+  });
+
+  it("shows the range strip with the selection marked", () => {
+    const s = openedState({ tab: "chart", data: { ...EMPTY_DATA, history: spanning } });
+    const text = stripAnsi(render(s, 100, 30).join("\n"));
+    expect(text).toContain("24H");
+    expect(text).toContain("ALL");
+    // The keys are in the strip: nobody guesses "[" and "]".
+    expect(text).toContain("[ ]");
+  });
+
+  it("steps the range with [ and ], clamped at both ends", () => {
+    const base = openedState({ tab: "chart" });
+    expect(reduce({ ...base, range: "fy" }, KEY("]"), 10).state.range).toBe("all");
+    // Clamped, not wrapped — stepping off ALL onto 24H is disorienting.
+    expect(reduce({ ...base, range: "all" }, KEY("]"), 10).state.range).toBe("all");
+    expect(reduce({ ...base, range: "24h" }, KEY("["), 10).state.range).toBe("24h");
+    expect(reduce({ ...base, range: "1w" }, KEY("["), 10).state.range).toBe("24h");
+  });
+
+  it("ignores the range keys away from the chart", () => {
+    const s = reduce(openedState({ tab: "holdings", range: "fy" }), KEY("]"), 10).state;
+    expect(s.range).toBe("fy");
+  });
+
+  it("counts only the days inside the range", () => {
+    const s = openedState({
+      tab: "chart",
+      range: "all",
+      data: { ...EMPTY_DATA, history: spanning },
+    });
+    expect(stripAnsi(render(s, 100, 30).join("\n"))).toContain("2 days");
+  });
+
+  it("says the range is empty rather than drawing a flat chart", () => {
+    const s = openedState({
+      tab: "chart",
+      range: "24h",
+      data: { ...EMPTY_DATA, history: [spanning[0]] },
+    });
+    expect(stripAnsi(render(s, 100, 30).join("\n"))).toContain("No portfolio history yet");
   });
 });

@@ -1,4 +1,5 @@
 import { heldIn, money, qty, signed } from "../output.js";
+import { RANGES, RANGE_LABEL, pointsInRange } from "../range.js";
 import { renderPortfolio, toChartPoints } from "./chart.js";
 import { ansi, pad, truncate, visibleWidth } from "./terminal.js";
 import { TABS, TAB_LABEL, isList, rowCount, type State, type Tab } from "./state.js";
@@ -132,7 +133,10 @@ function entityLines(state: State, width: number, height: number): string[] {
 
 /** What the status bar counts differs by tab — the chart measures days, not rows. */
 function countLabel(state: State): string {
-  if (state.tab === "chart") return plural(state.data.history.length, "day", "days");
+  if (state.tab === "chart") {
+    const fyStartMonth = state.data.settings?.financialYearStartMonth ?? 7;
+    return plural(pointsInRange(state.data.history, state.range, fyStartMonth).length, "day", "days");
+  }
   return plural(rowCount(state), "row", "rows");
 }
 
@@ -185,7 +189,11 @@ const MIN_TILE_ROWS = 3;
  * explicit in the figure itself.
  */
 function dashboardTab(state: State, width: number, rows: number): { header: string; body: string[] } {
-  const points = state.data.history;
+  // AU's July start as the fallback, and only when the entity has no settings
+  // row at all — a US entity's own settings say January, and assuming either
+  // one would put the FY boundary in the wrong place for half an account.
+  const fyStartMonth = state.data.settings?.financialYearStartMonth ?? 7;
+  const points = pointsInRange(state.data.history, state.range, fyStartMonth);
   const last = points[points.length - 1];
 
   const header = last
@@ -194,14 +202,36 @@ function dashboardTab(state: State, width: number, rows: number): { header: stri
       `   ${ansi.green}INCOME ${money(last.cumulativeIncome)}${ansi.reset}`
     : `  ${ansi.dim}no history${ansi.reset}`;
 
-  const tileRows = rows - Math.round(rows * CHART_SHARE);
-  const showTile = tileRows >= MIN_TILE_ROWS && state.data.holdings.length > 0;
-  const chartRows = showTile ? rows - tileRows : rows;
+  // One row for the range strip, always — a chart whose window you cannot see
+  // is a chart you can misread, and the figures above are range-scoped too.
+  const body = [rangeStrip(state)];
+  const remaining = rows - body.length;
 
-  const body = renderPortfolio(toChartPoints(points), { width, height: chartRows });
+  const tileRows = remaining - Math.round(remaining * CHART_SHARE);
+  const showTile = tileRows >= MIN_TILE_ROWS && state.data.holdings.length > 0;
+  const chartRows = showTile ? remaining - tileRows : remaining;
+
+  body.push(...renderPortfolio(toChartPoints(points), { width, height: chartRows }));
   if (showTile) body.push(...holdingsTile(state, width, tileRows));
 
   return { header: truncate(header, width), body };
+}
+
+/**
+ * The selected range, as a segmented strip — the web dashboard's control,
+ * with the same options in the same order.
+ *
+ * Shown rather than hidden behind a keystroke because the range silently
+ * changes what every figure on this screen means. The keys are in the strip
+ * itself for the same reason: nobody guesses `[` and `]`.
+ */
+function rangeStrip(state: State): string {
+  const segments = RANGES.map((range) =>
+    range === state.range
+      ? `${ansi.reverse} ${RANGE_LABEL[range]} ${ansi.reset}`
+      : `${ansi.dim} ${RANGE_LABEL[range]} ${ansi.reset}`,
+  ).join("");
+  return `  ${segments}  ${ansi.dim}[ ]${ansi.reset}`;
 }
 
 /**
@@ -326,6 +356,7 @@ function helpLines(): string[] {
     "  ⏎              open the selected entity",
     "  ↹ / ← → / h l  switch tab",
     "  1..5           jump to a tab",
+    "  [ ]            narrow / widen the chart's time range",
     "  r              reload this entity",
     "  s              sync every enabled source, and watch it",
     "  q / Esc        back to entities, or quit from there",
