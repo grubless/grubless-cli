@@ -583,3 +583,27 @@ describe("portfolio chart tab", () => {
     expect(stripAnsi(lines[19])).toContain("r reload");
   });
 });
+
+describe("loading spinner", () => {
+  it("turns as the tick advances", () => {
+    const frames = new Set(
+      [0, 1, 2, 3].map((tick) => {
+        const s = { ...initialState(), loading: true, tick };
+        return stripAnsi(render(s, 80, 24).join("\n")).match(/(\S) Loading/)?.[1];
+      }),
+    );
+    // Four consecutive ticks must not all draw the same glyph, or it is not
+    // spinning.
+    expect(frames.size).toBeGreaterThan(1);
+  });
+
+  it("still says what it is doing, not just that it is busy", () => {
+    const s = { ...initialState(), loading: true };
+    expect(stripAnsi(render(s, 80, 24).join("\n"))).toContain("Loading…");
+  });
+
+  it("spins on an entity's tabs too, not only the picker", () => {
+    const s = openedState({ loading: true, tick: 2 });
+    expect(stripAnsi(render(s, 80, 24).join("\n"))).toMatch(/\S Loading…/);
+  });
+});

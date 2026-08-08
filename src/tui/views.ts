@@ -40,7 +40,7 @@ function entityPickerLines(state: State, height: number): string[] {
   lines.push("");
 
   if (state.loading && state.entities.length === 0) {
-    lines.push(`${ansi.dim}Loading…${ansi.reset}`);
+    lines.push(loadingLine(state));
     return lines;
   }
   if (state.entities.length === 0) {
@@ -62,6 +62,18 @@ function entityPickerLines(state: State, height: number): string[] {
   lines.push("");
   lines.push(statusBar(state, plural(state.entities.length, "entity", "entities"), "↑↓ move · ⏎ open · ? help · q quit"));
   return lines;
+}
+
+/**
+ * A turning star. Cheap, but it is the only thing on screen that says the
+ * difference between "fetching" and "hung" — an entity with years of history
+ * takes a few seconds to load, and a static "Loading…" for that long reads as
+ * a stall.
+ */
+const SPINNER = ["✶", "✸", "✹", "✺", "✹", "✷"];
+
+function loadingLine(state: State): string {
+  return `${ansi.cyan}${SPINNER[state.tick % SPINNER.length]}${ansi.reset} ${ansi.dim}Loading…${ansi.reset}`;
 }
 
 function plural(count: number, one: string, many: string): string {
@@ -98,7 +110,7 @@ function entityLines(state: State, width: number, height: number): string[] {
   lines.push(isList(state.tab) ? `${ansi.dim}${header}${ansi.reset}` : header);
 
   if (state.loading) {
-    lines.push(`${ansi.dim}Loading…${ansi.reset}`);
+    lines.push(loadingLine(state));
   } else if (!isList(state.tab)) {
     // Already sized to the viewport, and not a list: no scroll offset to
     // apply and no row to highlight. See isList().

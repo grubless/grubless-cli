@@ -28,6 +28,8 @@ import { render, viewportRows } from "./views.js";
  */
 
 const SYNC_POLL_MS = 2000;
+/** Fast enough to read as motion, slow enough not to strobe. */
+const SPINNER_INTERVAL_MS = 120;
 
 export async function runTui(client: ApiClient): Promise<number> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
@@ -42,11 +44,37 @@ export async function runTui(client: ApiClient): Promise<number> {
   const term = new Terminal();
   let state = initialState();
   let syncTimer: NodeJS.Timeout | null = null;
+  let spinTimer: NodeJS.Timeout | null = null;
 
   const paint = () => term.render(render(state, term.width, term.height));
 
+  /**
+   * Runs the spinner only while something is actually loading.
+   *
+   * A permanent repaint loop would be the simpler code and the wrong
+   * behaviour: this is a long-lived terminal process, and waking every 120ms
+   * to redraw an idle screen is a laptop battery cost for nothing. The
+   * frame-diffing painter would swallow the redraw anyway, so it would burn
+   * the wakeups without even showing.
+   */
+  const syncSpinner = () => {
+    if (state.loading && spinTimer === null) {
+      spinTimer = setInterval(() => {
+        state = { ...state, tick: state.tick + 1 };
+        paint();
+      }, SPINNER_INTERVAL_MS);
+      // Never hold the process open on its own account — the event loop
+      // should end when the TUI does, not 120ms later.
+      spinTimer.unref();
+    } else if (!state.loading && spinTimer !== null) {
+      clearInterval(spinTimer);
+      spinTimer = null;
+    }
+  };
+
   const setState = (next: State) => {
     state = next;
+    syncSpinner();
     paint();
   };
 
@@ -161,6 +189,7 @@ export async function runTui(client: ApiClient): Promise<number> {
   return new Promise<number>((resolve) => {
     const finish = (code: number) => {
       if (syncTimer) clearTimeout(syncTimer);
+      if (spinTimer) clearInterval(spinTimer);
       term.close();
       resolve(code);
     };
@@ -190,6 +219,7 @@ export async function runTui(client: ApiClient): Promise<number> {
       }
     });
 
+    syncSpinner();
     paint();
     void loadEntities();
   });

@@ -87,6 +87,12 @@ export interface State {
   syncing: boolean;
   showHelp: boolean;
   quit: boolean;
+  /**
+   * Spinner frame counter, advanced by the app's timer rather than by any
+   * keypress — which is why the reducer neither reads nor writes it. A load
+   * that takes twenty seconds has to look alive without input.
+   */
+  tick: number;
 }
 
 export function initialState(): State {
@@ -104,6 +110,7 @@ export function initialState(): State {
     syncing: false,
     showHelp: false,
     quit: false,
+    tick: 0,
   };
 }
 
