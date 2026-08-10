@@ -1,5 +1,5 @@
 import { createInterface } from "node:readline/promises";
-import type { ApiToken, Entity } from "@grubless/api-types";
+import type { ApiToken, Entity } from "../api-types.js";
 import { ApiClient } from "../client.js";
 import { clearToken, loadConfig, saveToken, configFilePath } from "../config.js";
 import { CliError, ExitCode, note, out, style, table } from "../output.js";

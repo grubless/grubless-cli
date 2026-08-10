@@ -1,14 +1,31 @@
 {
   "name": "@grubless/cli",
   "version": "0.1.0",
-  "description": "Command-line client for Grubless \u2014 crypto tax for entities.",
+  "description": "Command-line client for Grubless — crypto tax for entities.",
+  "license": "MIT",
+  "homepage": "https://grubless.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grubless/grubless-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/grubless/grubless-cli/issues"
+  },
+  "keywords": [
+    "crypto",
+    "tax",
+    "cgt",
+    "ato",
+    "cli"
+  ],
   "type": "module",
   "bin": {
     "grubless": "./dist/index.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
@@ -18,16 +35,14 @@
     "build": "tsc -p tsconfig.json --noEmit && tsup && node scripts/verify-bundle.mjs",
     "verify-bundle": "node scripts/verify-bundle.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "test:e2e": "vitest run src/test/e2e.test.ts",
+    "prepublishOnly": "npm run build"
   },
+  "//dependencies": "Deliberately empty, and checked by scripts/verify-bundle.mjs. This binary holds an API token that can read a firm's entire client list; every dependency it takes is a machine that could reach that token. Node 20 provides fetch, parseArgs and everything else this needs.",
   "dependencies": {},
   "devDependencies": {
-    "@grubless/api": "workspace:*",
-    "@grubless/api-types": "workspace:*",
-    "@grubless/db": "workspace:*",
     "@types/node": "^22.9.0",
-    "fastify": "^5.1.0",
-    "postgres": "^3.4.5",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",

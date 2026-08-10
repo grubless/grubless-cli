@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { Entity, EntityActivity, Source } from "@grubless/api-types";
+import type { Entity, EntityActivity, Source } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { CliError, ExitCode, heldIn, json, money, note, out, qty, shortDate, style, table } from "../output.js";
 import { resolveEntity, resolveEntityScope } from "./entities.js";
@@ -209,7 +209,7 @@ export async function holdings(
   const entities = await resolveEntityScope(client, opts);
 
   for (const entity of entities) {
-    const rows = await client.get<import("@grubless/api-types").Holding[]>(`/entities/${entity.id}/holdings`);
+    const rows = await client.get<import("../api-types.js").Holding[]>(`/entities/${entity.id}/holdings`);
     if (opts.json) {
       json({ entity: { id: entity.id, name: entity.name }, holdings: rows });
       continue;

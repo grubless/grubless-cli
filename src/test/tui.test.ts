@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Entity, Holding, PortfolioHistoryPoint, Source, TaxYearSummary } from "@grubless/api-types";
+import type { Entity, Holding, PortfolioHistoryPoint, Source, TaxYearSummary } from "../api-types.js";
 import { decodeKeys, stripAnsi, truncate, visibleWidth } from "../tui/terminal.js";
 import { EMPTY_DATA, initialState, reduce, rowCount, type State } from "../tui/state.js";
 import { render, viewportRows } from "../tui/views.js";

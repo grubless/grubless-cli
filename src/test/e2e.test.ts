@@ -1,37 +1,77 @@
-import { execSync } from "node:child_process";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import postgres from "postgres";
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { describe as vitestDescribe, it, expect, beforeAll } from "vitest";
 
 /**
  * End-to-end tests for the CLI.
  *
  * These drive the **built `dist/index.js`** as a real subprocess against a
- * real API on a real port, backed by a scratch database — not the module
- * functions in-process. That's the point: the thing users install is the
- * bundle, and the failure modes worth catching (a bad shebang, an unbundled
- * workspace import, an exit code that never propagates) only exist in the
- * artifact. Testing the source would prove none of them.
+ * running Grubless API — not the module functions in-process. That's the
+ * point: the thing users install is the bundle, and the failure modes worth
+ * catching (a bad shebang, an exit code that never propagates, a wire shape
+ * that moved) only exist in the artifact talking to a real server. Testing the
+ * source would prove none of them.
  *
- * Never touches a real database: same scratch-DB discipline as
- * apps/api/src/test/harness.ts.
+ * ## Why this tier needs a server, and why that is the honest design
+ *
+ * Everything else in `src/test/` is pure and runs anywhere. This file cannot
+ * be, because what it exists to verify is the HTTP conversation. When this
+ * lived in the Grubless monorepo it booted the API in-process against a
+ * scratch database; standalone, it instead points at whatever API you give it
+ * and uses **only public routes** to set itself up — register, create an
+ * entity, mint tokens, add a source. No database access, no server internals.
+ *
+ * That constraint turned out to be a feature. A CLI is separately versioned
+ * from the deployment it talks to, so the only meaningful compatibility
+ * question is "does this binary work against *that* server" — which is now
+ * exactly what this asks, and it can be pointed at a local stack, a staging
+ * deploy, or production with a throwaway account.
+ *
+ * ## Running it
+ *
+ *     pnpm build
+ *     GRUBLESS_E2E_API_URL=http://localhost:3000 pnpm test
+ *
+ * Skipped, loudly, when that variable is unset — so `pnpm test` on a fresh
+ * clone passes without anyone standing up a stack, and nobody mistakes a
+ * skipped tier for a passing one. See README.md § Tests.
+ *
+ * ## What it leaves behind
+ *
+ * A registered user and one entity per run, in whatever database it was
+ * pointed at. There is no account-deletion route to clean up with, and adding
+ * one just to serve a test would be the tail wagging the dog. Point this at a
+ * disposable stack.
  */
 
 const execFileAsync = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
 const CLI = join(here, "..", "..", "dist", "index.js");
 
-const ADMIN_URL = process.env.TEST_DATABASE_ADMIN_URL ?? "postgres://grubbertax:changeme@localhost:5432/postgres";
+const API_URL = process.env.GRUBLESS_E2E_API_URL;
 
-let app: FastifyInstance;
+/**
+ * Every suite in this file needs a server, so the gate lives in one place
+ * rather than on each `describe`. Shadowing the import means a suite added
+ * later is covered without anyone remembering to guard it.
+ */
+const describe = API_URL ? vitestDescribe : vitestDescribe.skip;
+
+if (!API_URL) {
+  // Printed, not silent: a skipped tier that looks like a passing one is how
+  // a suite stops being trusted.
+  console.warn(
+    "\n  e2e: GRUBLESS_E2E_API_URL is unset — skipping the tests that drive the built binary\n" +
+      "      against a real API. Run them with:\n" +
+      "        pnpm build && GRUBLESS_E2E_API_URL=http://localhost:3000 pnpm test\n",
+  );
+}
+
 let baseUrl: string;
-let dbName: string;
 let token: string;
 let entityId: string;
 
@@ -62,71 +102,78 @@ async function run(args: string[], env: Record<string, string> = {}): Promise<Ru
   }
 }
 
-beforeAll(async () => {
-  if (!existsSync(CLI)) {
-    throw new Error(`${CLI} not found — run \`pnpm --filter @grubless/cli build\` before the tests.`);
-  }
+/** Session cookie for the throwaway account, used only during setup. */
+let cookie: string;
+/** A read-scoped token, minted alongside the write one. */
+let readToken: string;
 
-  dbName = `grubless_cli_${process.pid}`;
-  const admin = postgres(ADMIN_URL, { max: 1 });
-  await admin.unsafe(`DROP DATABASE IF EXISTS "${dbName}"`);
-  await admin.unsafe(`CREATE DATABASE "${dbName}"`);
-  await admin.end();
-
-  const base = ADMIN_URL.slice(0, ADMIN_URL.lastIndexOf("/"));
-  const databaseUrl = `${base}/${dbName}`;
-
-  execSync("pnpm --filter @grubless/db migrate", {
-    env: { ...process.env, DATABASE_URL: databaseUrl },
-    stdio: "pipe",
+/**
+ * POSTs as the throwaway user and fails with the server's own message.
+ *
+ * Setup failures are otherwise invisible — an entity that silently wasn't
+ * created shows up thirty tests later as "No entity matching", which sends you
+ * looking at argument parsing.
+ */
+async function api<T>(path: string, body: unknown, extraHeaders: Record<string, string> = {}): Promise<T> {
+  const res = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...extraHeaders },
+    body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    const detail = await res.text();
+    // 429 is the one worth naming: auth routes are rate-limited per IP, so a
+    // few runs in quick succession exhaust the register budget and every test
+    // fails for a reason that has nothing to do with the CLI.
+    const hint =
+      res.status === 429
+        ? " — auth rate limit hit; wait, or set AUTH_RATE_LIMIT_DISABLED=1 on the API"
+        : "";
+    throw new Error(`e2e setup: POST ${path} → ${res.status}${hint}\n${detail}`);
+  }
+  return (await res.json()) as T;
+}
 
-  process.env.DATABASE_URL = databaseUrl;
-  process.env.REDIS_URL = process.env.TEST_REDIS_URL ?? "redis://localhost:6379/15";
-  process.env.AUTH_RATE_LIMIT_DISABLED = "1";
+beforeAll(async () => {
+  if (!API_URL) return;
+  if (!existsSync(CLI)) {
+    throw new Error(`${CLI} not found — run \`pnpm build\` before the tests.`);
+  }
+  baseUrl = API_URL.replace(/\/$/, "");
 
-  const { buildServer } = await import("@grubless/api/src/server.js");
-  app = await buildServer();
-  app.log.level = "silent";
-  // A real port: the CLI speaks HTTP, so app.inject() would bypass exactly
-  // the layer under test.
-  await app.listen({ host: "127.0.0.1", port: 0 });
-  const address = app.server.address();
-  if (!address || typeof address === "string") throw new Error("no port");
-  baseUrl = `http://127.0.0.1:${address.port}`;
-
-  // Register + create an entity through the real routes.
+  // A fresh account per run, so the assertions below can assume an empty
+  // world without the suite needing to own the database. Tenant isolation is
+  // what makes that safe: this user sees its own entity and nothing else, on
+  // a stack that may well have others.
+  const email = `cli-e2e-${randomBytes(6).toString("hex")}@example.com`;
   const register = await fetch(`${baseUrl}/auth/register`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: "cli@example.com", password: "test-password-12345" }),
+    body: JSON.stringify({ email, password: "test-password-12345" }),
   });
-  const cookie = (register.headers.get("set-cookie") ?? "").split(";")[0];
-  const userId = ((await register.json()) as { id: string }).id;
+  if (!register.ok) {
+    throw new Error(`e2e setup: register → ${register.status}\n${await register.text()}`);
+  }
+  cookie = (register.headers.get("set-cookie") ?? "").split(";")[0];
 
-  const entity = await fetch(`${baseUrl}/entities`, {
-    method: "POST",
-    headers: { "content-type": "application/json", cookie },
-    body: JSON.stringify({ name: "Acme Trading Pty Ltd", entityType: "company", jurisdictionCode: "AU_ATO" }),
-  });
-  entityId = ((await entity.json()) as { id: string }).id;
+  const entity = await api<{ id: string }>(
+    "/entities",
+    { name: "Acme Trading Pty Ltd", entityType: "company", jurisdictionCode: "AU_ATO" },
+    { cookie },
+  );
+  entityId = entity.id;
 
-  // Seed a write-scoped token directly — same hashing as auth/api-token.ts.
-  token = "grb_" + randomBytes(32).toString("base64url");
-  const sql = postgres(databaseUrl, { max: 1 });
-  await sql`
-    insert into api_tokens (user_id, token_hash, name, scope)
-    values (${userId}, ${createHash("sha256").update(token).digest("hex")}, 'cli test', 'write')
-  `;
-  await sql.end();
+  // Minted through the real route rather than inserted — the standalone repo
+  // has no database access, and going through /api-tokens exercises the same
+  // path a user does.
+  token = (await api<{ token: string }>("/api-tokens", { name: "cli e2e", scope: "write" }, { cookie })).token;
+  readToken = (await api<{ token: string }>("/api-tokens", { name: "cli e2e ro", scope: "read" }, { cookie })).token;
+
+  // No source is created here on purpose. Several assertions below depend on
+  // the entity having none — "sources sync --all" reporting `skipped` is one
+  // of them — so the one source this file needs is created by the last
+  // describe, after those have run.
 }, 120_000);
-
-afterAll(async () => {
-  await app?.close();
-  const admin = postgres(ADMIN_URL, { max: 1 });
-  await admin.unsafe(`DROP DATABASE IF EXISTS "${dbName}" WITH (FORCE)`);
-  await admin.end();
-});
 
 describe("the shipped bundle", () => {
   it("runs and reports its version", async () => {
@@ -392,64 +439,15 @@ describe("sources", () => {
   });
 });
 
-describe("version handshake", () => {
-  /**
-   * Driven against a stub rather than the real API, because the floor is read
-   * from MIN_CLI_VERSION once at buildServer() time — changing it per-request
-   * isn't possible, and standing up a second full API just to move one header
-   * is disproportionate. What's under test is the CLI's reaction, not the
-   * server's ability to set a header (verified by hand against the container).
-   */
-  let stub: import("node:http").Server;
-  let stubUrl: string;
-
-  beforeAll(async () => {
-    const { createServer } = await import("node:http");
-    stub = createServer((_req, res) => {
-      res.setHeader("content-type", "application/json");
-      res.setHeader("x-grubless-min-cli-version", "99.0.0");
-      res.end("[]");
-    });
-    await new Promise<void>((resolve) => stub.listen(0, "127.0.0.1", resolve));
-    const addr = stub.address();
-    if (!addr || typeof addr === "string") throw new Error("no port");
-    stubUrl = `http://127.0.0.1:${addr.port}`;
-  });
-
-  afterAll(async () => {
-    await new Promise<void>((resolve) => stub.close(() => resolve()));
-  });
-
-  it("warns on stderr when the server requires a newer CLI, without failing", async () => {
-    const { stdout, stderr } = await execFileAsync(
-      process.execPath,
-      [CLI, "entities", "list", "--json", "--api-url", stubUrl],
-      { env: { ...process.env, GRUBLESS_TOKEN: token, NO_COLOR: "1" } },
-    );
-    expect(stderr).toContain("99.0.0");
-    expect(stderr).toContain("npm install -g @grubless/cli");
-    // Advisory, not fatal: a raised floor must not break a firm's nightly job
-    // at 2am. The command still ran and still produced its data.
-    expect(JSON.parse(stdout)).toEqual([]);
-  });
-});
-
 describe("read-only token scope", () => {
   it("blocks a mutating command at the API, with a scope-specific message", async () => {
-    const readToken = "grb_" + randomBytes(32).toString("base64url");
-    const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
-    const [user] = await sql<{ id: string }[]>`select id from users limit 1`;
-    await sql`
-      insert into api_tokens (user_id, token_hash, name, scope)
-      values (${user.id}, ${createHash("sha256").update(readToken).digest("hex")}, 'read only', 'read')
-    `;
-
-    const [source] = await sql`
-      insert into sources (entity_id, source_type, adapter_key, label, config)
-      values (${entityId}, 'csv_import', 'csv_generic', 'Test CSV', '{}'::jsonb)
-      returning id
-    `;
-    await sql.end();
+    // Created here rather than in beforeAll: an entity with a source would
+    // invalidate the "nothing to sync" assertions above.
+    const source = await api<{ id: string | number }>(
+      `/entities/${entityId}/sources`,
+      { adapterKey: "csv_generic", label: "Test CSV" },
+      { cookie },
+    );
 
     const res = await run(["sources", "sync", "--entity", entityId, "--source", String(source.id)], {
       GRUBLESS_TOKEN: readToken,

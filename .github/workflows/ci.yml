@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      # Node 20 is the floor declared in `engines`; 22 is what most people
+      # actually have. Both, because a CLI that only works on the maintainer's
+      # version is a CLI that works for the maintainer.
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Typechecks, bundles, and runs verify-bundle.mjs — the check that fails
+      # the build if engine code or a runtime dependency ever leaks into the
+      # published artifact.
+      - run: pnpm build
+      # The e2e tier skips itself without GRUBLESS_E2E_API_URL, which is not
+      # set here on purpose: standing up a full Grubless stack in CI to test a
+      # thin HTTP client would be testing the server. Those 35 run against a
+      # real deployment before a release — see README.md § Tests.
+      - run: pnpm test
+
+  publish-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Catches the packaging mistakes that only appear at publish time — a
+      # `files` entry pointing at nothing, a `bin` that isn't in the tarball.
+      # Cheap here; embarrassing after a real publish.
+      - run: npm pack --dry-run

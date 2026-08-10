@@ -1,4 +1,4 @@
-import type { PortfolioHistoryPoint } from "@grubless/api-types";
+import type { PortfolioHistoryPoint } from "../api-types.js";
 import { ansi } from "./terminal.js";
 
 /**

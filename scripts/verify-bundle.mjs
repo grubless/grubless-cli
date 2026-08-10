@@ -1,19 +1,24 @@
 #!/usr/bin/env node
 /**
- * Fails the build if the tax engine leaked into the published CLI bundle.
+ * Fails the build if Grubless engine code leaked into the published CLI
+ * bundle.
  *
- * `apps/cli` is published to npm. `@grubless/core` is the moat — genuine
- * entity-aware ATO/IRS computation, identified in PLAN-gtm.md §3.1 as the
- * thing that is slowest and most expensive for a competitor to copy. Bundling
- * it would hand it over in readable JS, and would also be a self-hosting
- * vector the SaaS-only decision closed on purpose (STATUS.md §8).
+ * This package is published to npm and its source is public. The tax engine
+ * (`@grubless/core`) is not: entity-aware ATO/IRS computation is the expensive
+ * part to build, and shipping it here would hand it over in readable JS.
  *
- * The CLI is a thin HTTP client: every figure comes from the API as a
- * finished value. Nothing here should ever need engine code.
+ * The CLI is a thin HTTP client — every figure comes from the API as a
+ * finished value — so nothing here should ever need engine code, and this
+ * check should never fire. It is kept precisely because it should never fire:
+ * the failure it guards against is one careless import in a hurry.
  *
  * Why a build check and not a code review rule: `import type` erases at
  * compile time but a plain `import` does not, and the two differ by five
  * characters. A reviewer will miss that on a busy afternoon; grep will not.
+ *
+ * Now that this repo is standalone, nothing resolves to `@grubless/core` at
+ * all — so the realistic trigger is a future contributor vendoring a snippet
+ * of it rather than an import. Same check, same outcome.
  */
 
 import { readFileSync, existsSync, readdirSync } from "node:fs";
@@ -62,9 +67,9 @@ if (found.length > 0) {
   console.error("verify-bundle: tax engine code leaked into the published CLI bundle.\n");
   for (const symbol of found) console.error(`  ✗ ${symbol}`);
   console.error(
-    "\nThe CLI must stay a thin HTTP client (docs/plan-cli.md §3).\n" +
-      "Most likely cause: a value import from @grubless/core that should be `import type`.\n" +
-      "Wire shapes belong in @grubless/api-types, which is types-only.",
+    "\nThe CLI must stay a thin HTTP client.\n" +
+      "Most likely cause: a value import that should be `import type`.\n" +
+      "Wire shapes belong in src/api-types.ts, which is types-only.",
   );
   process.exit(1);
 }

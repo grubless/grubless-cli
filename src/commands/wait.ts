@@ -1,4 +1,4 @@
-import type { EntityActivity } from "@grubless/api-types";
+import type { EntityActivity } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { CliError, ExitCode, note, style } from "../output.js";
 

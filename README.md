@@ -106,6 +106,7 @@ grubless sources sync       --entity <id|name> (--source <id> | --all) [--full] 
 grubless import <file.csv>  --entity <id|name> --source <id> [--wait]
 
 grubless holdings           --entity <id|name>
+grubless portfolio          --entity <id|name> [--range 24h|7d|1m|3m|1y|fy|all]
 grubless tax-summary        --entity <id|name> [--year 2025]
 grubless warnings           --entity <id|name> [--fail-on-blocking]
 
@@ -137,6 +138,21 @@ Without `--out`, the CSV goes to stdout:
 grubless report capital-gains --entity acme --year 2025 > cg.csv
 grubless holdings --entity acme --json | jq '.[] | select(.hasMismatch)'
 ```
+
+### Portfolio
+
+```bash
+grubless portfolio --entity acme --range 1y
+```
+
+Draws value, unrealised gain and cumulative income over time, in braille, in
+your terminal. `--json` gives you the series instead, with the range echoed
+back — a filtered array with no record of the filter can't tell a quiet year
+apart from a narrow window.
+
+Unlike the interactive interface and the web dashboard, which open on the
+current financial year, the command defaults to `all`: something reading into a
+pipe gets everything unless told otherwise.
 
 ### Waiting for syncs
 
@@ -175,3 +191,71 @@ broke".
 | `GRUBLESS_TOKEN` | API token; wins over stored config |
 | `GRUBLESS_API_URL` | API endpoint |
 | `NO_COLOR` | Disable colour |
+
+---
+
+## Development
+
+```bash
+pnpm install
+pnpm build      # typecheck, bundle, then verify the bundle
+pnpm test
+pnpm dev -- entities list    # run from source, no build
+```
+
+### What this repo is
+
+A thin HTTP client, and nothing more. Every figure it prints arrives from the
+Grubless API as a finished value — there is no tax logic here, and there is not
+meant to be. The server that computes those figures is not open source; this is
+the client you talk to it with.
+
+That boundary is enforced rather than trusted: `scripts/verify-bundle.mjs`
+greps the built output for engine symbols on every build and fails if any
+appear.
+
+### Zero runtime dependencies
+
+`dependencies` in `package.json` is empty and is meant to stay that way. This
+binary holds a token that can read a firm's entire client list, so every
+package it installs is another machine that could reach that token. Node 20
+provides `fetch`, `parseArgs`, and everything else this needs.
+
+A pull request that adds a runtime dependency needs to argue that case. One
+that adds a dev dependency doesn't — nothing in `devDependencies` reaches the
+published artifact.
+
+### Tests
+
+`pnpm test` runs 142 tests that need nothing but Node — argument parsing,
+formatting, CSV, the chart renderer, and the whole interactive interface,
+which is split into pure state and pure views precisely so it can be tested
+without a terminal.
+
+A further 35 drive the **built binary** as a subprocess against a real Grubless
+API. They're skipped, loudly, unless you point them at one:
+
+```bash
+pnpm build
+GRUBLESS_E2E_API_URL=http://localhost:3000 pnpm test
+```
+
+They set themselves up entirely through public routes — register, create an
+entity, mint tokens — so any reachable deployment works. They leave a
+throwaway account and one entity behind, because there's no account-deletion
+route to clean up with. Point them at a stack you don't mind that happening to.
+
+### Wire types
+
+`src/api-types.ts` is this client's *declared* view of the API's shapes, kept
+deliberately as a copy rather than imported from the server. A CLI is
+separately versioned from the deployment it talks to, so compiling against the
+server's own declarations would only prove agreement with a server you aren't
+talking to. What catches real drift is the e2e run above; what tells a user
+about it is the `x-grubless-min-cli-version` handshake, which warns on stderr
+without failing the command — a raised floor must not break someone's nightly
+job at 2am.
+
+## Licence
+
+MIT. See [LICENSE](./LICENSE).

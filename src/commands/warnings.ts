@@ -3,7 +3,7 @@ import type {
   UncategorizedTransferWarning,
   UnpricedAssetWarning,
   ZeroCostWarning,
-} from "@grubless/api-types";
+} from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { ExitCode, json, money, note, out, qty, style, table } from "../output.js";
 import { resolveEntityScope } from "./entities.js";

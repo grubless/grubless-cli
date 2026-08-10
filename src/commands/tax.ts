@@ -1,4 +1,4 @@
-import type { TaxYearSummary } from "@grubless/api-types";
+import type { TaxYearSummary } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { ExitCode, json, money, note, out, style, table } from "../output.js";
 import { resolveEntityScope } from "./entities.js";

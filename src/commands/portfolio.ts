@@ -1,4 +1,4 @@
-import type { Entity, EntityTaxSettings, PortfolioHistoryPoint } from "@grubless/api-types";
+import type { Entity, EntityTaxSettings, PortfolioHistoryPoint } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { CliError, ExitCode, json, money, out, signed, style, useColour } from "../output.js";
 import { RANGES, isRangeKey, pointsInRange, type RangeKey } from "../range.js";

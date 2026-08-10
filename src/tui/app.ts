@@ -8,7 +8,7 @@ import type {
   TaxYearSummary,
   UncategorizedTransferWarning,
   ZeroCostWarning,
-} from "@grubless/api-types";
+} from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { CliError, ExitCode } from "../output.js";
 import { Terminal, type Key } from "./terminal.js";

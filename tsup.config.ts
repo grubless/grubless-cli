@@ -1,19 +1,23 @@
 import { defineConfig } from "tsup";
 
 /**
- * Bundles everything into a single file with NO workspace dependencies left
- * in the output's import graph — `@grubless/*` packages use `workspace:*`
- * versions that npm consumers cannot resolve, so they must be inlined rather
- * than declared. `noExternal` is what forces that; `dependencies` in
- * package.json is deliberately empty (Node 20 gives us fetch and parseArgs,
- * which is all this needs) so the published package's dependency surface —
- * the thing that would carry a supply-chain risk into a machine holding an
- * API token for a firm's whole client list — is zero.
+ * Bundles everything into a single file with an empty dependency graph.
  *
- * `@grubless/api-types` is types-only and erases entirely; it is listed here
- * as a belt-and-braces measure in case a value is ever added to it by
- * mistake. The real guard against the tax engine leaking into this bundle is
- * the `verify-bundle` script (see package.json / docs/plan-cli.md §3).
+ * `dependencies` in package.json is deliberately empty — Node 20 gives us
+ * fetch and parseArgs, which is all this needs — so the published package's
+ * dependency surface is zero. That is a security property, not a minimalism
+ * exercise: this binary holds an API token that can read a firm's entire
+ * client list, so every transitive package it installs is another machine that
+ * could reach that token.
+ *
+ * `noExternal` remains as a backstop. Nothing resolves to `@grubless/*` any
+ * more (the wire types were vendored into `src/api-types.ts` when this repo
+ * split out of the monorepo), but if a dependency on one is ever added back it
+ * must be inlined rather than declared — a `workspace:*` version published to
+ * npm is unresolvable for everyone who installs it.
+ *
+ * The real guard against the tax engine leaking into this bundle is
+ * `scripts/verify-bundle.mjs`, which runs on every build.
  */
 export default defineConfig({
   entry: ["src/index.ts"],

@@ -8,7 +8,7 @@ import type {
   TaxYearSummary,
   ZeroCostWarning,
   UncategorizedTransferWarning,
-} from "@grubless/api-types";
+} from "../api-types.js";
 import { RANGES, type RangeKey } from "../range.js";
 
 /**

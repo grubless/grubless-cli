@@ -2,7 +2,7 @@ import { createWriteStream, mkdirSync } from "node:fs";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { join } from "node:path";
-import type { Entity } from "@grubless/api-types";
+import type { Entity } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { csvToTable } from "../csv.js";
 import { CliError, ExitCode, json, note, style } from "../output.js";
