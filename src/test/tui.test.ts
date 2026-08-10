@@ -426,7 +426,7 @@ describe("holdings \"held in\" column", () => {
       data: {
         ...EMPTY_DATA,
         holdings: [
-          holding(null, [{ label: "Kraken-nodeintegration-a-very-long-label" }]),
+          holding(null, [{ label: "Kraken-trading-account-a-very-long-label" }]),
           holding("solana", [{ label: "x" }]),
         ],
       },

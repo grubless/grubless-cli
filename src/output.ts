@@ -275,7 +275,7 @@ export function heldIn(
   if (labels.length === 1) return ellipsize(labels[0], maxWidth);
 
   // Overflow becomes "first +N", never a mid-label cut. A real row here holds
-  // ETH across seven sources; "evm-ellipal (Ethereum), Kraken-nodeinte…" is
+  // ETH across seven sources; "evm-wallet-a (Ethereum), Kraken-tradin…" is
   // both unreadable and misleading about how many places it lives in, whereas
   // the count is the fact you actually want at a glance. --json has the full
   // list either way.

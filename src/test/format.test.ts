@@ -135,10 +135,10 @@ describe("heldIn", () => {
     const out = heldIn({
       chain: null,
       sources: [
-        { label: "evm-ellipal (Ethereum)" },
-        { label: "Kraken-nodeintegration" },
-        { label: "evm-nano-s (Ethereum)" },
-        { label: "evm-metamask (Ethereum)" },
+        { label: "evm-wallet-a (Ethereum)" },
+        { label: "Kraken-trading" },
+        { label: "evm-wallet-b (Ethereum)" },
+        { label: "evm-wallet-c (Ethereum)" },
       ],
     });
     expect(out).toMatch(/ \+3$/);
@@ -151,7 +151,7 @@ describe("heldIn", () => {
   });
 
   it("truncates a single long label to the column so later columns stay aligned", () => {
-    const out = heldIn({ chain: null, sources: [{ label: "Kraken-nodeintegration" }] }, 12);
+    const out = heldIn({ chain: null, sources: [{ label: "Kraken-trading-account" }] }, 12);
     expect(out).toHaveLength(12);
     expect(out.endsWith("…")).toBe(true);
   });

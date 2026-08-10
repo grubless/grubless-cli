@@ -279,7 +279,7 @@ function holdingsTab(state: State, width: number): { header: string; body: strin
   const body = rows.map((h) => {
     const flag = h.hasMismatch ? `  ${ansi.yellow}mismatch${ansi.reset}` : "";
     // Truncated to the column, not just padded — a source label like
-    // "Kraken-nodeintegration" would otherwise shove every later column out
+    // "Kraken-trading-account" would otherwise shove every later column out
     // of alignment on that one row.
     const where = heldIn(h, HELD_IN_WIDTH - 1);
     return `  ${pad(h.symbol, 10)}${pad(where, HELD_IN_WIDTH)}${padLeft(qty(h.quantity), 18)}${padLeft(money(h.value), 16)}${flag}`;
