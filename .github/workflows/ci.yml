@@ -5,28 +5,34 @@ on:
     branches: [main]
   pull_request:
 
+# The build tooling and the thing being shipped have different Node
+# requirements, and conflating them broke the first run of this workflow.
+#
+# pnpm 11 needs Node >= 22.13. Running the whole job on a Node 20 matrix leg
+# therefore crashed inside pnpm itself — `No such built-in module: node:sqlite`
+# — before a single test executed. The tempting fix is to drop Node 20 from the
+# matrix, but that would be letting a *build tool* decide which Node versions
+# the published CLI supports, which is backwards: `engines` says >= 20, the
+# bundle uses only fetch, parseArgs and readline/promises, and all of that
+# works there.
+#
+# So: build and test once on a modern Node, then verify the ARTIFACT on every
+# Node version we claim to support. That is also the more honest test — users
+# run `node dist/index.js`, not `pnpm test`.
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      # Node 20 is the floor declared in `engines`; 22 is what most people
-      # actually have. Both, because a CLI that only works on the maintainer's
-      # version is a CLI that works for the maintainer.
-      matrix:
-        node: [20, 22]
     steps:
-      - uses: actions/checkout@v4
-      # Pinned here rather than via a `packageManager` field in package.json:
-      # that field makes corepack refuse any other client, and nothing in this
-      # repo actually requires pnpm — there is no workspace protocol and every
-      # dependency is a devDependency. `npm install` works fine for a
-      # contributor who prefers it.
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node }}
+          # Must satisfy pnpm 11's own floor (>= 22.13), which is unrelated to
+          # what the CLI supports. See node-compat below for that.
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Typechecks, bundles, and runs verify-bundle.mjs — the check that fails
@@ -35,23 +41,79 @@ jobs:
       - run: pnpm build
       # The e2e tier skips itself without GRUBLESS_E2E_API_URL, which is not
       # set here on purpose: standing up a full Grubless stack in CI to test a
-      # thin HTTP client would be testing the server. Those 35 run against a
-      # real deployment before a release — see README.md § Tests.
+      # thin HTTP client would be testing the server. Those run against a real
+      # deployment before a release — see README.md § Tests.
       - run: pnpm test
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  node-compat:
+    # The matrix that actually means something: does the shipped bundle run on
+    # every Node we claim? No install, no pnpm — just the artifact and a Node.
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      # One leg failing shouldn't cancel the others; knowing it breaks on 20
+      # AND 24 is more useful than knowing it breaks on whichever ran first.
+      fail-fast: false
+      matrix:
+        # 20 is the floor in `engines`; 24 is current. Both must pass for the
+        # engines range to be a promise rather than a guess.
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Runs, and reports its version
+        run: |
+          node dist/index.js --version
+          node dist/index.js --help > /dev/null
+      - name: Propagates real exit codes
+        # A CLI whose exit codes collapse to 0 is worse than one that crashes,
+        # because a pipeline built on it passes silently. Both codes here are
+        # reachable without a server, and both are in README.md § Exit codes.
+        #
+        # Note the order they depend on: the credential is resolved BEFORE the
+        # command is dispatched (src/index.ts), so an unknown command while
+        # signed out exits 3, not 2. That is deliberate — "you aren't signed
+        # in" is the more actionable message — and testing both directions
+        # pins it as a decision rather than leaving it as a surprise for
+        # whoever next runs the binary on a machine with no config.
+        env:
+          # Never sent anywhere: every assertion below fails before any HTTP.
+          GRUBLESS_TOKEN: grb_ci_placeholder_never_transmitted
+          # Hermetic, so a stored config on the runner could never make the
+          # "no credential" case pass for the wrong reason.
+          XDG_CONFIG_HOME: /tmp/grubless-ci-empty
+        run: |
+          node dist/index.js definitely-not-a-command && code=0 || code=$?
+          test "$code" = "2" || { echo "unknown command: expected exit 2, got $code"; exit 1; }
+          node dist/index.js entities list --nope && code=0 || code=$?
+          test "$code" = "2" || { echo "unknown flag: expected exit 2, got $code"; exit 1; }
+          GRUBLESS_TOKEN= node dist/index.js entities list && code=0 || code=$?
+          test "$code" = "3" || { echo "no credential: expected exit 3, got $code"; exit 1; }
+      - name: Needs no dependencies to be installed
+        # The published package declares zero dependencies. Running the bundle
+        # from a directory with no node_modules is what proves it.
+        run: |
+          mkdir -p /tmp/bare && cp dist/index.js /tmp/bare/
+          cd /tmp/bare && node index.js --version
 
   publish-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      # Pinned here rather than via a `packageManager` field in package.json:
-      # that field makes corepack refuse any other client, and nothing in this
-      # repo actually requires pnpm — there is no workspace protocol and every
-      # dependency is a devDependency. `npm install` works fine for a
-      # contributor who prefers it.
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
