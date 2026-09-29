@@ -1,0 +1,89 @@
+name: Release
+
+# Push a tag to release it:
+#
+#     git tag v0.2.0 && git push origin v0.2.0
+#
+# The tag's version is stamped into the binary, the full test suite runs, and
+# a GitHub release is created with a static binary for every target and a
+# SHA256SUMS file. Nothing is published unless the tests pass.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./...
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { goos: linux, goarch: amd64 }
+          - { goos: linux, goarch: arm64 }
+          - { goos: darwin, goarch: amd64 }
+          - { goos: darwin, goarch: arm64 }
+          - { goos: windows, goarch: amd64, ext: .exe }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          # "v0.2.0" → "0.2.0": the handshake compares bare x.y.z.
+          VERSION: ${{ github.ref_name }}
+        run: |
+          version=${VERSION#v}
+          out=dist/grubless-$version-$GOOS-$GOARCH${{ matrix.ext }}
+          go build -trimpath \
+            -ldflags="-s -w -X github.com/grubless/grubless-cli/internal/client.Version=$version" \
+            -o "$out" ./cmd/grubless
+          ls -l "$out"
+      # Signing goes here, once there are certificates to sign with. Unsigned,
+      # a downloaded binary is quarantined by macOS Gatekeeper (the user has
+      # to allow it in System Settings) and warned about by Windows
+      # SmartScreen. macOS needs an Apple Developer ID and notarisation;
+      # Windows an Authenticode certificate.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: grubless-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist/
+          merge-multiple: true
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum grubless-* | tee SHA256SUMS
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" dist/* \
+            --repo "${{ github.repository }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            --verify-tag

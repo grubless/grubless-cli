@@ -19,7 +19,12 @@ import (
 	"github.com/grubless/grubless-cli/internal/output"
 )
 
-const Version = "0.1.0"
+// Version is this build's version. A release sets it from the tag, with
+// -ldflags "-X github.com/grubless/grubless-cli/internal/client.Version=…"
+// (see .github/workflows/release.yml); anything built otherwise reports the
+// version below. It's what --version prints, what the user-agent carries, and
+// what the server's minimum-version handshake compares against.
+var Version = "0.1.0"
 
 // minVersionHeader is the server's floor for supported CLIs. It shipped in
 // v1 so that it existed before anyone was pinned to an old version:

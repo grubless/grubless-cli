@@ -3,14 +3,32 @@
 Command-line client for [Grubless](https://grubless.io) — crypto tax for
 Australian and US entities.
 
-A single static binary for Linux, macOS and Windows (x64 and arm64), with
-nothing else to install. Download it from the
-[releases page](https://github.com/grubless/grubless-cli/releases), or build
-it with Go 1.26+:
+A single static binary for Linux, macOS (Intel and Apple silicon) and Windows,
+with nothing else to install. Download the one for your platform from the
+[releases page](https://github.com/grubless/grubless-cli/releases), check it
+against the release's `SHA256SUMS`, and put it on your `PATH`:
+
+```bash
+curl -LO https://github.com/grubless/grubless-cli/releases/download/v0.2.0/grubless-0.2.0-darwin-arm64
+curl -LO https://github.com/grubless/grubless-cli/releases/download/v0.2.0/SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS      # macOS: shasum -a 256 -c --ignore-missing
+install -m 755 grubless-0.2.0-darwin-arm64 /usr/local/bin/grubless
+```
+
+The binaries aren't code-signed yet. On macOS, Gatekeeper blocks a
+downloaded one until you allow it (System Settings → Privacy & Security, or
+`xattr -d com.apple.quarantine /usr/local/bin/grubless`); on Windows,
+SmartScreen warns before the first run.
+
+Or build it with Go 1.26+:
 
 ```bash
 go install github.com/grubless/grubless-cli/cmd/grubless@latest
 ```
+
+The CLI used to be the npm package `@grubless/cli`. That package is no longer
+updated; this binary replaces it, with the same commands, flags, output and
+exit codes.
 
 Two ways to use it, and they coexist deliberately:
 
@@ -287,6 +305,20 @@ that case, and add it there.
   It leaves a throwaway account and one entity behind — there's no
   account-deletion route to clean up with. Point it at a stack you don't
   mind that happening to.
+
+### Releasing
+
+Push a version tag:
+
+```bash
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+`.github/workflows/release.yml` runs the tests, builds a static binary for
+each target with the tag's version stamped in, and creates the GitHub release
+with the binaries and a `SHA256SUMS` file attached. It marks where signing
+goes once there are certificates for it: an Apple Developer ID with
+notarisation, and a Windows Authenticode certificate.
 
 ### Wire types
 
