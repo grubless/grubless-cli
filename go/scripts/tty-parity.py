@@ -144,9 +144,11 @@ def go_only_session(api, base_env):
     """
     steps = [
         # Cypherpunk by default, on a 256-colour terminal with no choice made.
-        ("load", None, 1.5, ["GRUBLESS█"]),
-        ("open Acme", b"\r", 1.5, []),
-        ("transactions tab", b"6", 0.8, ["6 Transactions", "DATE (UTC)", "2026-09-29 01:30", "1.5 SOL", "340 USDC", "+100.13", "transfer (internal)*", "100+ rows"]),
+        ("load", None, 1.5, ["GRUBLESS█", "Entities", "Acme Trading Pty Ltd"]),
+        # The overview's cards, as the web's. At 100 columns the breakdown
+        # stands down and the stat cards stay; the extras load after.
+        ("open Acme", b"\r", 2.0, ["1 Overview", "Portfolio value", "Connected sources", "Transactions", "1,234", "Price coverage", "412 / 415", "3 missing"]),
+        ("transactions tab", b"6", 0.8, ["┌─ Transactions ─", "6 Transactions", "DATE (UTC)", "2026-09-29 01:30", "1.5 SOL", "340 USDC", "+100.13", "transfer (internal)*", "100+ rows"]),
         ("second row", b"j", 0.5, []),
         ("open it", b"\r", 0.8, ["00000001-1d7e-4d0a-9d1b-3c1f2b8e9a01", "Rebalance after the audit", "jupiter", "COST BASIS", "fee", "2 of 100+"]),
         ("next one", b"j", 0.5, ["00000002-1d7e-4d0a-9d1b-3c1f2b8e9a01", "3 of 100+"]),
@@ -229,72 +231,11 @@ def main():
             failures += 1
             print(f"✗ tty: {label}\n    node: {outputs['node']!r:.1500}\n    go:   {outputs['go']!r:.1500}")
 
-    # 2. A TUI session.
-    steps = [
-        ("load", None, 1.5),
-        ("move down", b"j", 0.5),
-        ("back up", b"k", 0.5),
-        ("open Acme", b"\r", 1.5),
-        ("widen range", b"]", 0.5),
-        ("narrow range", b"[[[", 0.5),
-        ("holdings", b"2", 0.5),
-        ("cursor down", b"j", 0.5),
-        ("page down", b"\x1b[6~", 0.5),
-        ("warnings", b"3", 0.5),
-        ("tax", b"4", 0.5),
-        ("sources", b"5", 0.5),
-        # Not Tab: from Sources it now reaches Transactions in Go and wraps to
-        # Portfolio in the TS, by design. Tab order is unit-tested in Go.
-        ("back to the chart", b"1", 0.5),
-        ("help", b"?", 0.5),
-        ("dismiss help", b"x", 0.5),
-        ("reload", b"r", 1.5),
-        ("sync", b"s", 3.0),
-        ("sync settles", b"", 6.0),
-        ("back to picker", b"q", 0.5),
-        ("open the empty entity", b"j\r", 1.5),
-        ("its warnings", b"3", 0.5),
-        ("back", b"\x1b", 0.8),
-        ("quit", b"q", 0.5),
-    ]
-    screens = {}
-    exits = {}
-    tails = {}
-    for name, argv in BUILDS.items():
-        stub.send_signal(signal.SIGUSR2)
-        # The Go build defaults to Cypherpunk; the comparison with Node is of
-        # layout and text, so it runs in the theme Node has.
-        pid, fd = spawn(argv, {**base_env, "GRUBLESS_THEME": "terminal"})
-        screen = Screen()
-        screens[name] = []
-        raw = b""
-        for label, keys, settle in steps:
-            if keys:
-                os.write(fd, keys)
-            out = read_until_idle(fd, idle=settle)
-            raw += out
-            screen.feed(out)
-            screens[name].append((label, screen.text()))
-        exits[name] = wait_exit(pid)
-        raw += read_until_idle(fd, idle=0.3, limit=2)
-        tails[name] = raw[-40:]
-        os.close(fd)
-
-    for (label, a), (_, b) in zip(screens["node"], screens["go"]):
-        b = without_go_only(b)
-        if a == b:
-            print(f"✓ tui: {label}")
-        else:
-            failures += 1
-            print(f"✗ tui: {label}")
-            for i, (x, y) in enumerate(zip(a.split("\n") + [""] * ROWS, b.split("\n") + [""] * ROWS)):
-                if x != y:
-                    print(f"    row {i}\n      node: {x!r}\n      go:   {y!r}")
-    for name in BUILDS:
-        restored = b"\x1b[?25h" in tails[name] and b"\x1b[?1049l" in tails[name]
-        ok = exits[name] == 0 and restored
-        failures += 0 if ok else 1
-        print(f"{'✓' if ok else '✗'} tui ({name}): exit {exits[name]}, terminal restored: {restored}")
+    # 2. The TUI. Its screens used to be compared with the Node build's, line
+    # by line; since the Go build laid the TUI out in cards, as the web app
+    # is, there's nothing left for that comparison to match. The Go-only
+    # session below checks what each screen must show instead, and the pure
+    # rendering is pinned by go/internal/tui's golden files.
 
     stub.send_signal(signal.SIGUSR2)
     failures += go_only_session(api, base_env)

@@ -25,6 +25,7 @@ var (
 	cyValue      = "\x1b[38;2;196;77;255m"
 	cyIncome     = "\x1b[38;2;10;173;149m"
 	cyMuted      = "\x1b[38;2;134;196;140m"
+	cyCard       = "\x1b[48;2;15;23;18m"
 )
 
 func TestThemeNames(t *testing.T) {
@@ -86,15 +87,15 @@ func TestCypherScreens(t *testing.T) {
 			if VisibleWidth(line) > 100 {
 				t.Errorf("%s line %d wider than 100", name, i)
 			}
-			// Every reset inside a line must put the theme's background back,
-			// or the rest of the row drops to the terminal's own. Truncate's
-			// closing reset ends the line, so it's the one exception.
+			// Every reset must be followed straight away by a background —
+			// the page's, a card's, the tab strip's — or the rest of the row
+			// drops to the terminal's own. Truncate's closing reset ends the
+			// line, so it's the one exception.
 			body := strings.TrimSuffix(line, "…\x1b[0m")
 			for _, m := range bareReset.FindAllStringIndex(body, -1) {
-				// Another reset straight after is fine: it's that one's job.
 				rest := strings.TrimLeft(strings.ReplaceAll(body[m[1]:], "\x1b[0m", "\x00"), "\x00")
-				if rest != "" && !strings.HasPrefix(rest, cyBackground) {
-					t.Errorf("%s line %d: a reset that doesn't restore the background: %q", name, i, line)
+				if rest != "" && !strings.HasPrefix(rest, "\x1b[48;") {
+					t.Errorf("%s line %d: a reset with no background after it: %q", name, i, line)
 					break
 				}
 			}
@@ -111,11 +112,11 @@ func TestCypherScreens(t *testing.T) {
 	if !strings.Contains(StripAnsi(picker), "GRUBLESS█") {
 		t.Error("the title is uppercase with a block cursor, as the web's h1")
 	}
-	if !strings.Contains(picker, cyPrimaryBg+"\x1b[38;2;10;14;10m") {
+	if !strings.Contains(picker, cyPrimaryBg+"\x1b[38;2;10;14;10m") || !strings.Contains(picker, cyCard) {
 		t.Error("the selected row should be primary purple with dark text, the web's ::selection")
 	}
 	c := strings.Join(Render(chart, 100, 30), "\n")
-	if !strings.Contains(c, cyValue+"VALUE") || !strings.Contains(c, cyIncome+"INCOME") {
+	if !regexp.MustCompile(regexp.QuoteMeta(cyValue)+`\d`).MatchString(c) || !strings.Contains(c, cyIncome+"income") {
 		t.Error("dashboard figures take the web chart's series colours")
 	}
 	if !strings.Contains(c, cyValue+"⠀") && !regexp.MustCompile(regexp.QuoteMeta(cyValue)+`[\x{2801}-\x{28FF}]`).MatchString(c) {

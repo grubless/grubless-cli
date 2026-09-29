@@ -87,6 +87,13 @@ const (
 	cypherRing        = "#00e5ff"
 	cypherCatAqua     = "#0aad95"
 	cypherCatYellow   = "#a69306"
+	cypherCatBlue     = "#1874ed"
+	cypherCatViolet   = "#8442ee"
+	cypherCatMagenta  = "#fc21a2"
+	cypherCatOrange   = "#d86105"
+	cypherCard        = "#0f1712"
+	cypherSecondary   = "#152219"
+	cypherShadow      = "#1f3d27" // --pixel-shadow
 )
 
 // palette is every escape code the views use, for one theme.
@@ -104,7 +111,22 @@ type palette struct {
 
 	chart chart.Palette
 
-	// selected is a highlighted row, and the active tab.
+	// Cards: corner style, border and title colours, the card's own
+	// surface (empty to use the page's), and the offset shadow (empty for
+	// none) as a foreground for its half-blocks and a background for its
+	// column.
+	square                          bool
+	cardBorder, cardTitle, cardBase string
+	shadow, shadowBg                string
+
+	// cat is the categorical palette for charts with several series, in
+	// the web's order; the muted "Other" is dim.
+	cat []string
+
+	// tabs draws the tab bar: the web's segmented control.
+	tabs func(labels []string, active int) string
+
+	// selected is a highlighted row.
 	selected func(string) string
 	// title is the app's name in the picker's heading.
 	title func() string
@@ -122,6 +144,21 @@ func paletteFor(theme string, trueColour bool) palette {
 		}
 		p.selected = func(s string) string { return reverse + s + reset }
 		p.title = func() string { return bold + "Grubless" + reset }
+		p.cardBorder, p.cardTitle = dim, dim
+		// Blue, cyan, yellow, magenta, bright magenta, bright red: the web's
+		// blue/aqua/yellow/violet/magenta/orange, in sixteen colours.
+		p.cat = []string{esc + "[34m", cyan, yellow, esc + "[35m", esc + "[95m", esc + "[91m"}
+		p.tabs = func(labels []string, active int) string {
+			var b strings.Builder
+			for i, l := range labels {
+				if i == active {
+					b.WriteString(reverse + " " + l + " " + reset)
+				} else {
+					b.WriteString(dim + " " + l + " " + reset)
+				}
+			}
+			return b.String()
+		}
 		return p
 	}
 
@@ -149,6 +186,30 @@ func paletteFor(theme string, trueColour bool) palette {
 		pnl:    fg(cypherCatYellow),
 	}
 	p.chart = chart.Palette{Value: p.value, Income: p.income, Pnl: p.pnl, Label: p.dim, Baseline: fg(cypherBorder), Reset: r}
+
+	// Cards as the web's: square, the card surface a shade off the page,
+	// and the hard pixel shadow.
+	p.square = true
+	p.cardBorder, p.cardTitle = fg(cypherBorder), fg(cypherMuted)
+	p.cardBase = bg(cypherCard) + fg(cypherForeground)
+	p.shadow, p.shadowBg = fg(cypherShadow), bg(cypherShadow)
+	p.cat = []string{fg(cypherCatBlue), fg(cypherCatAqua), fg(cypherCatYellow), fg(cypherCatViolet), fg(cypherCatMagenta), fg(cypherCatOrange)}
+
+	// The segmented control: a muted strip, the active tab raised out of it
+	// in the page colour.
+	strip := bg(cypherSecondary) + fg(cypherMuted)
+	p.tabs = func(labels []string, active int) string {
+		var b strings.Builder
+		b.WriteString(strip + " ")
+		for i, l := range labels {
+			if i == active {
+				b.WriteString(bg(cypherBackground) + bold + fg(cypherForeground) + " " + l + " " + reset + strip)
+			} else {
+				b.WriteString(" " + l + " ")
+			}
+		}
+		return b.String() + " " + r
+	}
 	// The web's ::selection: primary behind, primary-foreground on it.
 	p.selected = func(s string) string { return bg(cypherPrimary) + fg(cypherPrimaryFg) + s + r }
 	// An uppercase title ending in a block cursor, as the web's h1 does. The

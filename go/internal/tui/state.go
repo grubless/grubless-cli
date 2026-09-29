@@ -19,8 +19,10 @@ type Tab string
 // other tabs summarise, this one is the ledger they're summaries of.
 var Tabs = []Tab{"chart", "holdings", "warnings", "tax", "sources", "transactions"}
 
+// "Overview", as the web's first tab is called: it's the chart, the
+// breakdown and the headline figures together.
 var TabLabel = map[Tab]string{
-	"chart": "Portfolio", "holdings": "Holdings", "warnings": "Warnings", "tax": "Tax", "sources": "Sources",
+	"chart": "Overview", "holdings": "Holdings", "warnings": "Warnings", "tax": "Tax", "sources": "Sources",
 	"transactions": "Transactions",
 }
 
@@ -49,6 +51,14 @@ type EntityData struct {
 	// TxNextCursor is where the next page starts; nil when there isn't one.
 	TxNextCursor  *string `json:"txNextCursor"`
 	TxLoadingMore bool    `json:"txLoadingMore"`
+
+	// The overview's extras, fetched after everything above so a slow one
+	// (the breakdown takes seconds on a large ledger) doesn't hold the
+	// screen. Nil while loading; *Failed when it couldn't be had.
+	Breakdown       *api.ActivityBreakdown `json:"breakdown"`
+	BreakdownFailed bool                   `json:"breakdownFailed"`
+	Coverage        *api.PriceCoverage     `json:"coverage"`
+	CoverageFailed  bool                   `json:"coverageFailed"`
 }
 
 type State struct {

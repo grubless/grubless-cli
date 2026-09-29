@@ -26,26 +26,46 @@ var Now = time.Now
 // paletteOf is the escape codes for the state's theme.
 func paletteOf(s State) palette { return paletteFor(s.Theme, s.TrueColour) }
 
-const chromeRows = 4 // title + tabs + column header + status
+// chromeRows is what a list screen spends outside its rows: the title, the
+// tab bar and the status bar, then the list card's column header and its
+// border and shadow rows.
+const chromeRows = 3 + 1 + cardExtraRows
 
 func Render(s State, width, height int) []string {
 	p := paletteOf(s)
-	if s.ShowHelp {
-		return frame(helpLines(p), width, height)
+	switch {
+	case s.ShowHelp:
+		return frame(helpScreen(s, p, width, height), width, height)
+	case s.SelectedEntity == nil:
+		return frame(entityPickerLines(s, width, height), width, height)
 	}
-	if s.Filter != nil && s.SelectedEntity != nil {
-		return frame(filterLines(s, height), width, height)
+	head := []string{entityHeading(s, p), tabBar(p, s.Tab)}
+	var content []string
+	status := statusBar(s, countLabel(s), "↹ tab · r reload · s sync · ? help · q back")
+	switch {
+	case s.Filter != nil:
+		content = filterCard(s, p, width, height-3)
+		status = p.dim + "↑↓ field · ←→ change · type to edit · ^U clear field · ⏎ apply · Esc cancel" + p.reset
+	case s.Detail && s.Cursor < len(s.Data.Transactions):
+		content = detailCard(s, p, width, height-3)
+		position := fmt.Sprintf("%d of %d", s.Cursor+1, len(s.Data.Transactions))
+		if s.Data.TxNextCursor != nil {
+			position += "+"
+		}
+		status = statusBar(s, position, "↑↓ previous / next · Esc back")
+	case s.Tab == "chart":
+		content = overview(s, p, width, height-3)
+	default:
+		content = listCard(s, p, width, height-3)
 	}
-	if s.Detail && s.SelectedEntity != nil && s.Cursor < len(s.Data.Transactions) {
-		return frame(detailLines(s, width, height), width, height)
-	}
-	var body []string
-	if s.SelectedEntity != nil {
-		body = entityLines(s, width, height)
-	} else {
-		body = entityPickerLines(s, height)
-	}
-	return frame(body, width, height)
+	return frame(page(head, content, status, height), width, height)
+}
+
+// page stacks a screen: its heading lines, content filling what's left, and
+// the status bar on the last line.
+func page(head, content []string, status string, height int) []string {
+	lines := append(append([]string{}, head...), padLines(content, max(0, height-len(head)-1))...)
+	return append(lines, status)
 }
 
 // frame pads or truncates to exactly height × width.
@@ -63,38 +83,41 @@ func frame(lines []string, width, height int) []string {
 	return out
 }
 
-// ViewportRows is what the list body gets after the chrome.
+// ViewportRows is how many rows a list shows, after the chrome.
 func ViewportRows(height int) int { return max(1, height-chromeRows) }
 
 // ---------- entity picker ----------
 
-func entityPickerLines(s State, height int) []string {
+func entityPickerLines(s State, width, height int) []string {
 	p := paletteOf(s)
-	lines := []string{p.title() + "  " + p.dim + "select an entity" + p.reset, ""}
+	head := []string{p.title() + "  " + p.dim + "select an entity" + p.reset, ""}
+	status := statusBar(s, plural(len(s.Entities), "entity", "entities"), "↑↓ move · ⏎ open · t theme · ? help · q quit")
 
-	if s.Loading && len(s.Entities) == 0 {
-		return append(lines, loadingLine(s))
-	}
-	if len(s.Entities) == 0 {
-		return append(lines, "No entities available to this account.")
-	}
-
-	rows := ViewportRows(height)
-	nameWidth := 4
-	for _, e := range s.Entities {
-		nameWidth = max(nameWidth, jsstr.Len(e.Name))
-	}
-	for i := s.Offset; i < min(len(s.Entities), s.Offset+rows); i++ {
-		e := s.Entities[i]
-		line := "  " + Pad(e.Name, nameWidth) + "   " + p.dim + Pad(e.EntityType, 12) + e.Role + p.reset
-		if i == s.EntityIndex {
-			line = p.selected(StripAnsi(line))
+	var body []string
+	switch {
+	case s.Loading && len(s.Entities) == 0:
+		body = []string{loadingLine(s)}
+	case len(s.Entities) == 0:
+		body = []string{"No entities available to this account."}
+	default:
+		rows := ViewportRows(height)
+		nameWidth := 4
+		for _, e := range s.Entities {
+			nameWidth = max(nameWidth, jsstr.Len(e.Name))
 		}
-		lines = append(lines, line)
+		inner := p.cardInner(width)
+		body = []string{p.dim + Pad("NAME", nameWidth) + "   " + Pad("TYPE", 12) + "ROLE" + p.reset}
+		for i := s.Offset; i < min(len(s.Entities), s.Offset+rows); i++ {
+			e := s.Entities[i]
+			line := Pad(e.Name, nameWidth) + "   " + p.dim + Pad(e.EntityType, 12) + e.Role + p.reset
+			if i == s.EntityIndex {
+				line = p.selected(Pad(StripAnsi(line), inner))
+			}
+			body = append(body, line)
+		}
 	}
-
-	lines = append(lines, "")
-	return append(lines, statusBar(s, plural(len(s.Entities), "entity", "entities"), "↑↓ move · ⏎ open · ? help · q quit"))
+	content := p.card("Entities", plural(len(s.Entities), "entity", "entities"), width, padLines(body, max(1, height-len(head)-1-cardExtraRows)))
+	return page(head, content, status, height)
 }
 
 // spinner is a turning star: the only thing that says "fetching", not "hung".
@@ -112,31 +135,25 @@ func plural(count int, one, many string) string {
 	return strconv.Itoa(count) + " " + many
 }
 
-// ---------- entity detail ----------
+// ---------- entity screen ----------
 
-func entityLines(s State, width, height int) []string {
-	p := paletteOf(s)
+func entityHeading(s State, p palette) string {
 	e := s.SelectedEntity
-	lines := []string{
-		p.bold + e.Name + p.reset + "  " + p.dim + e.EntityType + " · " + e.Role + p.reset,
-		tabBar(p, s.Tab),
-	}
+	return p.bold + e.Name + p.reset + "  " + p.dim + e.EntityType + " · " + e.Role + p.reset
+}
 
-	rows := ViewportRows(height)
-	header, body := tabContent(s, width, rows)
+// listCard is a list tab: its rows in a card, under a column header, with the
+// cursor's row highlighted across the card's width.
+func listCard(s State, p palette, width, height int) []string {
+	title, right := tabCardTitle(s)
+	rows := max(1, height-cardExtraRows-1)
+	inner := p.cardInner(width)
+	header, body := tabContent(s, width)
 
-	// A list's header dims as a whole; the dashboard's carries its own colours.
-	if IsList(s.Tab) {
-		lines = append(lines, p.dim+header+p.reset)
-	} else {
-		lines = append(lines, header)
-	}
-
+	lines := []string{p.dim + header + p.reset}
 	switch {
 	case s.Loading:
 		lines = append(lines, loadingLine(s))
-	case !IsList(s.Tab):
-		lines = append(lines, body...)
 	case len(body) == 0 && s.Tab == "transactions" && s.TxFilter.Active() > 0:
 		// Not "Nothing here": the ledger isn't empty, the filter is.
 		lines = append(lines, p.dim+"No transactions match this filter — f to change it."+p.reset)
@@ -145,21 +162,45 @@ func entityLines(s State, width, height int) []string {
 	default:
 		for i := s.Offset; i < min(len(body), s.Offset+rows); i++ {
 			if i == s.Cursor {
-				lines = append(lines, p.selected(StripAnsi(body[i])))
+				lines = append(lines, p.selected(Pad(StripAnsi(body[i]), inner)))
 			} else {
 				lines = append(lines, body[i])
 			}
 		}
 	}
-
-	for len(lines) < height-1 {
-		lines = append(lines, "")
-	}
-	return append(lines, statusBar(s, countLabel(s), "↹ tab · r reload · s sync · ? help · q back"))
+	return p.card(title, right, width, padLines(lines, rows+1))
 }
 
-func rangedHistory(s State) []api.PortfolioHistoryPoint {
-	return timerange.Filter(s.Data.History, func(p api.PortfolioHistoryPoint) string { return p.Date }, s.Range, s.Data.Settings.FYStartMonth(), Now())
+// tabCardTitle is each list's card title, as the web titles the same card,
+// and the figure its border carries.
+func tabCardTitle(s State) (string, string) {
+	switch s.Tab {
+	case "holdings":
+		var values []*string
+		for _, h := range visibleHoldings(s) {
+			values = append(values, h.Value)
+		}
+		if total := output.SumDecimals(values...); total != nil {
+			return "Current holdings", "total " + output.Money(total)
+		}
+		return "Current holdings", ""
+	case "warnings":
+		n := len(s.Data.ZeroCost) + len(s.Data.Uncategorized)
+		if n == 0 {
+			return "Blocking issues", "none"
+		}
+		return "Blocking issues", plural(n, "to review", "to review")
+	case "tax":
+		return "Tax summary by financial year", ""
+	case "sources":
+		return "Sources", plural(len(s.Data.Sources), "connected", "connected")
+	case "transactions":
+		if n := s.TxFilter.Active(); n > 0 {
+			return "Transactions", plural(n, "filter", "filters")
+		}
+		return "Transactions", ""
+	}
+	return "", ""
 }
 
 // countLabel: the chart measures days, not rows.
@@ -184,91 +225,338 @@ func countLabel(s State) string {
 }
 
 func tabBar(p palette, active Tab) string {
-	var b strings.Builder
+	labels := make([]string, len(Tabs))
+	current := 0
 	for i, tab := range Tabs {
-		label := " " + strconv.Itoa(i+1) + " " + TabLabel[tab] + " "
+		labels[i] = strconv.Itoa(i+1) + " " + TabLabel[tab]
 		if tab == active {
-			b.WriteString(p.selected(label))
-		} else {
-			b.WriteString(p.dim + label + p.reset)
+			current = i
 		}
 	}
-	return b.String()
+	return p.tabs(labels, current)
 }
 
-func tabContent(s State, width, rows int) (string, []string) {
+func tabContent(s State, width int) (string, []string) {
 	switch s.Tab {
-	case "chart":
-		return dashboardTab(s, width, rows)
 	case "holdings":
-		return holdingsTab(s, width)
+		return holdingsTab(s)
 	case "warnings":
-		return warningsTab(s, width)
+		return warningsTab(s)
 	case "tax":
 		return taxTab(s)
 	case "sources":
-		return sourcesTab(s, width)
+		return sourcesTab(s)
 	case "transactions":
-		return transactionsTab(s, width)
+		return transactionsTab(s)
 	}
 	return "", nil
 }
 
 const (
-	// The chart's share of the tab; holdings take the rest.
-	chartShare = 0.7
-	// Header + one holding + "and N more" — anything less isn't a tile.
-	minTileRows  = 3
 	heldInWidth  = 22
 	holdingsCols = 10
 )
 
-// dashboardTab is the portfolio over time with current holdings beneath —
-// the web dashboard's two panels, in its order.
-func dashboardTab(s State, width, rows int) (string, []string) {
-	p := paletteOf(s)
-	points := rangedHistory(s)
+// ---------- overview ----------
 
-	header := "  " + p.dim + "no history" + p.reset
-	if len(points) > 0 {
-		last := points[len(points)-1]
-		header = "  " + p.dim + last.Date + p.reset + "   " + p.value + "VALUE " + output.Money(last.Value) + p.reset +
-			"   " + p.pnl + "UNREALISED " + output.Signed(last.UnrealizedPL) + p.reset +
-			"   " + p.income + "INCOME " + output.Money(last.CumulativeIncome) + p.reset
+// overview is the web dashboard's first tab, in its order: the portfolio
+// chart with the activity breakdown beside it, then a row of headline
+// figures. On a narrow terminal the breakdown stands down first, then the
+// figures, so the chart keeps its room.
+func overview(s State, p palette, width, height int) []string {
+	statRows := 0
+	switch {
+	case height >= 16 && width >= 76:
+		statRows = statCardRows
+	case height >= 26 && width >= 40:
+		statRows = 2 * statCardRows // two rows of two
 	}
+	chartHeight := height - statRows
 
-	// One row for the range strip, always: a chart whose window you can't see
-	// is a chart you can misread.
-	body := []string{rangeStrip(s)}
-	remaining := rows - len(body)
-
-	tileRows := remaining - int(jsstr.Round(float64(remaining)*chartShare))
-	showTile := tileRows >= minTileRows && len(s.Data.Holdings) > 0
-	chartRows := remaining
-	if showTile {
-		chartRows = remaining - tileRows
+	var top []string
+	if width >= 110 {
+		widths := split(width, 1, 2, 1)
+		top = hjoin(1, widths, portfolioCard(s, p, widths[0], chartHeight), breakdownCard(s, p, widths[1], chartHeight))
+	} else {
+		top = portfolioCard(s, p, width, chartHeight)
 	}
-
-	body = append(body, chart.Render(chart.FromHistory(points), chart.Options{Width: width, Height: chartRows, Colour: true, Palette: &p.chart})...)
-	if showTile {
-		body = append(body, holdingsTile(s, width, tileRows)...)
+	if statRows == 0 {
+		return top
 	}
-	return Truncate(header, width), body
+	return append(top, statCards(s, p, width, statRows)...)
 }
 
-// rangeStrip shows the selected window, with its keys, as the web
-// dashboard's segmented control.
-func rangeStrip(s State) string {
-	p := paletteOf(s)
-	var b strings.Builder
-	for _, r := range timerange.Keys {
+func rangedHistory(s State) []api.PortfolioHistoryPoint {
+	return timerange.Filter(s.Data.History, func(p api.PortfolioHistoryPoint) string { return p.Date }, s.Range, s.Data.Settings.FYStartMonth(), Now())
+}
+
+// portfolioCard: the headline figures, the range control, and the chart.
+func portfolioCard(s State, p palette, width, height int) []string {
+	points := rangedHistory(s)
+	inner := p.cardInner(width)
+	rows := max(1, height-cardExtraRows)
+
+	headline := p.dim + "no history in this range" + p.reset
+	if len(points) > 0 {
+		last := points[len(points)-1]
+		headline = p.bold + p.value + output.Money(last.Value) + p.reset +
+			"   " + p.pnl + "unrealised " + output.Signed(last.UnrealizedPL) + p.reset +
+			"   " + p.income + "income " + output.Money(last.CumulativeIncome) + p.reset
+	}
+	body := []string{headline, rangeStrip(s, p)}
+	if s.Loading {
+		body = append(body, loadingLine(s))
+	} else if chartRows := rows - len(body); chartRows >= 3 {
+		body = append(body, chart.Render(chart.FromHistory(points), chart.Options{Width: inner, Height: chartRows, Colour: true, Palette: &p.chart})...)
+	}
+	date := ""
+	if len(points) > 0 {
+		date = points[len(points)-1].Date
+	}
+	return p.card("Portfolio value", date, width, padLines(body, rows))
+}
+
+// rangeStrip is the web's range toggle: the same segmented control as the
+// tab bar, with the keys that step it.
+func rangeStrip(s State, p palette) string {
+	labels := make([]string, len(timerange.Keys))
+	current := 0
+	for i, r := range timerange.Keys {
+		labels[i] = timerange.Label[r]
 		if r == s.Range {
-			b.WriteString(p.selected(" " + timerange.Label[r] + " "))
-		} else {
-			b.WriteString(p.dim + " " + timerange.Label[r] + " " + p.reset)
+			current = i
 		}
 	}
-	return "  " + b.String() + "  " + p.dim + "[ ]" + p.reset
+	return p.tabs(labels, current) + "  " + p.dim + "[ ]" + p.reset
+}
+
+// maxNamedSlices is the web breakdown's: five named, the rest as "Other".
+const maxNamedSlices = 5
+
+type slice struct {
+	label string
+	value float64
+}
+
+// breakdownSlices totals the breakdown's category buckets over the chart's
+// range, largest first — computeSlices in the web's category-pie-chart.tsx.
+func breakdownSlices(s State) []slice {
+	b := s.Data.Breakdown
+	if b == nil {
+		return nil
+	}
+	cutoff := ""
+	if start, ok := timerange.StartDate(s.Range, s.Data.Settings.FYStartMonth(), Now()); ok {
+		cutoff = start.Format("2006-01-02")
+	}
+	totals := map[string]float64{}
+	var order []string
+	for _, row := range b.Category {
+		if cutoff != "" && row.Day < cutoff {
+			continue
+		}
+		if _, seen := totals[row.Key]; !seen {
+			order = append(order, row.Key)
+		}
+		totals[row.Key] += row.Value
+	}
+	var out []slice
+	for _, k := range order {
+		if totals[k] != 0 {
+			out = append(out, slice{txfmt.CategoryLabel(k), totals[k]})
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool { return out[i].value > out[j].value })
+	return out
+}
+
+// breakdownCard is the web's "Activity breakdown": what the entity's
+// transactions were, by value, over the chart's range. A bar per category
+// where the web draws a donut — a terminal draws bars better — in the same
+// colours, the top five named and the rest as Other.
+func breakdownCard(s State, p palette, width, height int) []string {
+	rows := max(1, height-cardExtraRows)
+	inner := p.cardInner(width)
+	var body []string
+	switch {
+	case s.Data.BreakdownFailed:
+		body = []string{p.dim + "Couldn't load the breakdown." + p.reset}
+	case s.Data.Breakdown == nil:
+		body = []string{p.dim + "Loading…" + p.reset}
+	default:
+		slices := breakdownSlices(s)
+		if len(slices) == 0 {
+			body = []string{p.dim + "No activity in this range." + p.reset}
+			break
+		}
+		// Named rows, then Other for the rest — fewer named on a short card,
+		// so nothing is dropped, only folded.
+		named := min(maxNamedSlices, len(slices), max(1, rows-1))
+		if len(slices) > named {
+			named = min(named, max(1, rows-2))
+		}
+		shown := slices[:named]
+		other := 0.0
+		for _, sl := range slices[named:] {
+			other += sl.value
+		}
+		top := slices[0].value
+		if other > top {
+			top = other
+		}
+		labelWidth := min(18, max(6, inner*2/5))
+		valueWidth := 8
+		barWidth := max(1, inner-2-labelWidth-1-valueWidth-1)
+		row := func(colour, label string, v float64) string {
+			return colour + "■" + p.reset + " " + Pad(output.Ellipsize(label, labelWidth), labelWidth) + " " +
+				colour + bar(v/top, barWidth) + p.reset + " " + padLeft(chart.CompactMoney(v), valueWidth)
+		}
+		for i, sl := range shown {
+			body = append(body, row(p.cat[i%len(p.cat)], sl.label, sl.value))
+		}
+		if len(slices) > named {
+			body = append(body, row(p.dim, "Other ("+strconv.Itoa(len(slices)-named)+")", other))
+		}
+	}
+	return p.card("Activity breakdown", timerange.Label[s.Range], width, padLines(body, rows))
+}
+
+// bar is a horizontal bar `fraction` of `width` long, in eighth-cell steps.
+func bar(fraction float64, width int) string {
+	if fraction < 0 {
+		fraction = 0
+	}
+	eighths := int(jsstr.Round(fraction * float64(width*8)))
+	if eighths == 0 && fraction > 0 {
+		eighths = 1 // something, however small, is not nothing
+	}
+	partials := []string{"", "▏", "▎", "▍", "▌", "▋", "▊", "▉"}
+	out := strings.Repeat("█", eighths/8) + partials[eighths%8]
+	return Pad(out, width)
+}
+
+// statCards are the web's four headline figures, one card each.
+func statCards(s State, p palette, width, rows int) []string {
+	type stat struct{ label, value, note string }
+	loading := func(failed bool) string {
+		if failed {
+			return "—"
+		}
+		return "…"
+	}
+
+	txns := loading(s.Data.BreakdownFailed)
+	if b := s.Data.Breakdown; b != nil && !s.Data.BreakdownFailed {
+		txns = output.Qty(output.Str(strconv.Itoa(b.TotalEvents)))
+	}
+
+	coverage, coverageNote := loading(s.Data.CoverageFailed), ""
+	if c := s.Data.Coverage; c != nil && !s.Data.CoverageFailed {
+		coverage = strconv.Itoa(c.Priced) + " / " + strconv.Itoa(c.Total)
+		switch {
+		case c.Total == 0:
+			coverage, coverageNote = "—", p.dim+"nothing to price"+p.reset
+		case c.Missing == 0:
+			coverageNote = p.dim + "all priced" + p.reset
+		default:
+			coverageNote = p.yellow + strconv.Itoa(c.Missing) + " missing" + p.reset
+		}
+	}
+
+	off := 0
+	for _, src := range s.Data.Sources {
+		if !src.SyncEnabled {
+			off++
+		}
+	}
+	sourcesNote := ""
+	if off > 0 {
+		sourcesNote = p.dim + strconv.Itoa(off) + " switched off" + p.reset
+	}
+	synced, syncedAt := lastSynced(s.Data.Sources)
+	syncedNote := ""
+	if !syncedAt.IsZero() {
+		syncedNote = p.dim + jsstr.ISODay(syncedAt) + p.reset
+	}
+
+	stats := []stat{
+		{"Connected sources", strconv.Itoa(len(s.Data.Sources)), sourcesNote},
+		{"Transactions", txns, p.dim + "all time" + p.reset},
+		{"Last synced", synced, syncedNote},
+		{"Price coverage", coverage, coverageNote},
+	}
+	if s.Loading {
+		for i := range stats {
+			stats[i].value, stats[i].note = "…", ""
+		}
+	}
+
+	// The figure, and a note beneath it — beneath rather than beside, as the
+	// web's cards wrap theirs on a narrow screen: "412 / 415  3 missing"
+	// doesn't fit a quarter of 100 columns.
+	cardFor := func(st stat, w int) []string {
+		return p.card(st.label, "", w, []string{p.bold + st.value + p.reset, st.note})
+	}
+	perRow := 4
+	if rows > statCardRows {
+		perRow = 2
+	}
+	var out []string
+	for i := 0; i < len(stats); i += perRow {
+		widths := split(width, 1, repeat(1, perRow)...)
+		var blocks [][]string
+		for j := 0; j < perRow; j++ {
+			blocks = append(blocks, cardFor(stats[i+j], widths[j]))
+		}
+		out = append(out, hjoin(1, widths, blocks...)...)
+	}
+	return out
+}
+
+// statCardRows is a stat card's height: figure, note, and the card around them.
+const statCardRows = 2 + cardExtraRows
+
+func repeat(v, n int) []int {
+	out := make([]int, n)
+	for i := range out {
+		out[i] = v
+	}
+	return out
+}
+
+// lastSynced is the most recent sync across the sources, in the web's words
+// (describeStaleness in the main repo's client-core): "3 hours ago", "just
+// now", and "Never" when nothing has synced. The instant comes back too, for
+// the card's note.
+func lastSynced(sources []api.Source) (string, time.Time) {
+	var latest time.Time
+	for _, src := range sources {
+		if src.LastSyncedAt == nil {
+			continue
+		}
+		if t, ok := jsstr.ParseDate(*src.LastSyncedAt); ok && t.After(latest) {
+			latest = t
+		}
+	}
+	if latest.IsZero() {
+		return "Never", latest
+	}
+	minutes := int(Now().Sub(latest).Minutes())
+	unit := func(n int, word string) string {
+		if n == 1 {
+			return "1 " + word + " ago"
+		}
+		return strconv.Itoa(n) + " " + word + "s ago"
+	}
+	switch {
+	case minutes < 1:
+		return "just now", latest
+	case minutes < 60:
+		return unit(minutes, "minute"), latest
+	case minutes < 60*24:
+		return unit(minutes/60, "hour"), latest
+	}
+	return unit(minutes/60/24, "day"), latest
 }
 
 func visibleHoldings(s State) []api.Holding {
@@ -290,39 +578,6 @@ func valueOf(h api.Holding) float64 {
 	return jsstr.ParseNumber(*h.Value)
 }
 
-// holdingsTile is the largest holdings, counting what didn't fit rather than
-// dropping it — four of thirty positions must not read as the portfolio.
-func holdingsTile(s State, width, rows int) []string {
-	p := paletteOf(s)
-	sorted := visibleHoldings(s)
-	// Stable, largest first; NaN compares as equal, as a JS comparator
-	// returning NaN does.
-	sort.SliceStable(sorted, func(i, j int) bool { return valueOf(sorted[j])-valueOf(sorted[i]) < 0 })
-
-	lines := []string{"  " + p.dim + Pad("HOLDINGS", holdingsCols) + Pad("HELD IN", heldInWidth) + padLeft("QUANTITY", 18) + padLeft("VALUE", 16) + p.reset}
-
-	// One row kept back for "and N more" whenever there is a remainder.
-	slots := rows - 1
-	if len(sorted) > rows-1 {
-		slots = rows - 2
-	}
-	shown := max(0, slots)
-	for _, h := range sorted[:min(shown, len(sorted))] {
-		lines = append(lines, holdingLine(p, h))
-	}
-	if remaining := len(sorted) - shown; remaining > 0 {
-		lines = append(lines, "  "+p.dim+"and "+strconv.Itoa(remaining)+" more — press 2"+p.reset)
-	}
-
-	if len(lines) > rows {
-		lines = lines[:max(0, rows)]
-	}
-	for i := range lines {
-		lines[i] = Truncate(lines[i], width)
-	}
-	return lines
-}
-
 func holdingLine(p palette, h api.Holding) string {
 	flag := ""
 	if h.HasMismatch {
@@ -331,35 +586,38 @@ func holdingLine(p palette, h api.Holding) string {
 	// Truncated to the column, not just padded, so a long source label
 	// can't shove later columns out of line.
 	where := output.HeldIn(h.Chain, h.SourceLabels(), heldInWidth-1)
-	return "  " + Pad(h.Symbol, holdingsCols) + Pad(where, heldInWidth) + padLeft(output.Qty(h.Quantity), 18) + padLeft(output.Money(h.Value), 16) + flag
+	// The symbol is cut to its column too: an unresolved token's is its
+	// 42-character contract address, which ran into HELD IN when the TUI
+	// still matched the Node build's screens — that TUI never cut it.
+	return Pad(output.Ellipsize(h.Symbol, holdingsCols-1), holdingsCols) + Pad(where, heldInWidth) + padLeft(output.Qty(h.Quantity), 18) + padLeft(output.Money(h.Value), 16) + flag
 }
 
-func holdingsTab(s State, width int) (string, []string) {
+func holdingsTab(s State) (string, []string) {
 	p := paletteOf(s)
-	header := "  " + Pad("ASSET", holdingsCols) + Pad("HELD IN", heldInWidth) + padLeft("QUANTITY", 18) + padLeft("VALUE", 16)
+	header := Pad("ASSET", holdingsCols) + Pad("HELD IN", heldInWidth) + padLeft("QUANTITY", 18) + padLeft("VALUE", 16)
 	var body []string
 	for _, h := range visibleHoldings(s) {
 		body = append(body, holdingLine(p, h))
 	}
-	return Truncate(header, width), body
+	return header, body
 }
 
-func warningsTab(s State, width int) (string, []string) {
+func warningsTab(s State) (string, []string) {
 	p := paletteOf(s)
-	header := "  " + Pad("KIND", 16) + Pad("DATE", 12) + Pad("ASSET", 10) + padLeft("AMOUNT", 18)
+	header := Pad("KIND", 16) + Pad("DATE", 12) + Pad("ASSET", 10) + padLeft("AMOUNT", 18)
 	var body []string
 	// Blocking categories first, labelled: the ordering IS the message.
 	for _, w := range s.Data.ZeroCost {
-		body = append(body, "  "+p.yellow+Pad("no cost basis", 16)+p.reset+Pad(jsstr.Slice(w.Ts, 0, 10), 12)+Pad(w.AssetSymbol, 10)+padLeft(output.Qty(w.Quantity), 18)+"   "+p.dim+w.SourceLabel+p.reset)
+		body = append(body, p.yellow+Pad("no cost basis", 16)+p.reset+Pad(jsstr.Slice(w.Ts, 0, 10), 12)+Pad(w.AssetSymbol, 10)+padLeft(output.Qty(w.Quantity), 18)+"   "+p.dim+w.SourceLabel+p.reset)
 	}
 	for _, w := range s.Data.Uncategorized {
-		body = append(body, "  "+p.yellow+Pad("uncategorised", 16)+p.reset+Pad(jsstr.Slice(w.Ts, 0, 10), 12)+Pad(w.AssetSymbol, 10)+padLeft(output.Qty(w.Amount), 18)+"   "+p.dim+w.Direction+p.reset)
+		body = append(body, p.yellow+Pad("uncategorised", 16)+p.reset+Pad(jsstr.Slice(w.Ts, 0, 10), 12)+Pad(w.AssetSymbol, 10)+padLeft(output.Qty(w.Amount), 18)+"   "+p.dim+w.Direction+p.reset)
 	}
-	return Truncate(header, width), body
+	return header, body
 }
 
 func taxTab(s State) (string, []string) {
-	header := "  " + Pad("FY", 10) + padLeft("INCOME", 16) + padLeft("NET CGT", 16) + padLeft("TAXABLE", 16) + padLeft("TAX", 14)
+	header := Pad("FY", 10) + padLeft("INCOME", 16) + padLeft("NET CGT", 16) + padLeft("TAXABLE", 16) + padLeft("TAX", 14)
 	var body []string
 	for _, r := range s.Data.Tax {
 		// A pass-through entity has no entity-level tax: "n/a", not "0.00".
@@ -367,14 +625,14 @@ func taxTab(s State) (string, []string) {
 		if r.Applicable {
 			tax = output.Money(r.TaxPayable)
 		}
-		body = append(body, "  "+Pad(r.FinancialYear, 10)+padLeft(output.Money(r.Income), 16)+padLeft(output.Money(r.NetCapitalGainLoss), 16)+padLeft(output.Money(r.TaxableAmount), 16)+padLeft(tax, 14))
+		body = append(body, Pad(r.FinancialYear, 10)+padLeft(output.Money(r.Income), 16)+padLeft(output.Money(r.NetCapitalGainLoss), 16)+padLeft(output.Money(r.TaxableAmount), 16)+padLeft(tax, 14))
 	}
 	return header, body
 }
 
-func sourcesTab(s State, width int) (string, []string) {
+func sourcesTab(s State) (string, []string) {
 	p := paletteOf(s)
-	header := "  " + Pad("LABEL", 24) + Pad("ADAPTER", 18) + padLeft("TXNS", 8) + "   " + Pad("SYNCED", 12) + "STATUS"
+	header := Pad("LABEL", 24) + Pad("ADAPTER", 18) + padLeft("TXNS", 8) + "   " + Pad("SYNCED", 12) + "STATUS"
 	var body []string
 	for _, src := range s.Data.Sources {
 		status := src.SyncStatus
@@ -394,19 +652,19 @@ func sourcesTab(s State, width int) (string, []string) {
 		if src.TransactionCount != nil {
 			count = jsstr.Number(*src.TransactionCount)
 		}
-		body = append(body, "  "+Pad(src.Label, 24)+Pad(src.AdapterKey, 18)+padLeft(count, 8)+"   "+Pad(synced, 12)+status)
+		body = append(body, Pad(src.Label, 24)+Pad(src.AdapterKey, 18)+padLeft(count, 8)+"   "+Pad(synced, 12)+status)
 	}
-	return Truncate(header, width), body
+	return header, body
 }
 
 // ---------- transactions ----------
 
-// Sized so a 100-column terminal shows every figure; only the source label,
-// last, gets cut.
+// Sized so a 100-column terminal shows every figure inside the card (95
+// columns of it); only the source label, last, gets cut.
 const (
 	txWhenWidth = 17
 	txTypeWidth = 21
-	txLegWidth  = 22
+	txLegWidth  = 20
 	txGainWidth = 13
 )
 
@@ -417,14 +675,13 @@ func txAssets(s State) txfmt.Assets {
 	return s.Data.TxAssets
 }
 
-func transactionsTab(s State, width int) (string, []string) {
+func transactionsTab(s State) (string, []string) {
 	p := paletteOf(s)
-	header := "  " + Pad("DATE (UTC)", txWhenWidth) + Pad("TYPE", txTypeWidth) + padLeft("OUT", txLegWidth) + padLeft("IN", txLegWidth) + padLeft("GAIN/LOSS", txGainWidth) + "  SOURCE"
+	header := Pad("DATE (UTC)", txWhenWidth) + Pad("TYPE", txTypeWidth) + padLeft("OUT", txLegWidth) + padLeft("IN", txLegWidth) + padLeft("GAIN/LOSS", txGainWidth) + "  SOURCE"
 	assets := txAssets(s)
 	var body []string
 	for _, e := range s.Data.Transactions {
-		body = append(body, "  "+
-			Pad(txfmt.When(e.Ts), txWhenWidth)+
+		body = append(body, Pad(txfmt.When(e.Ts), txWhenWidth)+
 			Pad(output.Ellipsize(txfmt.Type(e), txTypeWidth-1), txTypeWidth)+
 			padLeft(output.Ellipsize(txfmt.Legs(e, "out", assets), txLegWidth-1), txLegWidth)+
 			padLeft(output.Ellipsize(txfmt.Legs(e, "in", assets), txLegWidth-1), txLegWidth)+
@@ -433,15 +690,14 @@ func transactionsTab(s State, width int) (string, []string) {
 	}
 	// A trailing line, not a row: the cursor never lands on it.
 	if s.Data.TxLoadingMore && len(body) > 0 {
-		body = append(body, "  "+p.dim+"loading more…"+p.reset)
+		body = append(body, p.dim+"loading more…"+p.reset)
 	}
-	return Truncate(header, width), body
+	return header, body
 }
 
-// detailLines is one transaction in full: every leg with its exact figures,
+// detailCard is one transaction in full: every leg with its exact figures,
 // which the list can only summarise.
-func detailLines(s State, width, height int) []string {
-	p := paletteOf(s)
+func detailCard(s State, p palette, width, height int) []string {
 	e := s.Data.Transactions[s.Cursor]
 	assets := txAssets(s)
 	opt := func(v *string) string {
@@ -450,11 +706,9 @@ func detailLines(s State, width, height int) []string {
 		}
 		return *v
 	}
-	field := func(label, value string) string { return "  " + p.dim + Pad(label, 15) + p.reset + value }
+	field := func(label, value string) string { return p.dim + Pad(label, 15) + p.reset + value }
 
 	lines := []string{
-		p.bold + txfmt.Type(e) + p.reset + "  " + p.dim + txfmt.When(e.Ts) + " UTC" + p.reset,
-		"",
 		field("ID", e.ID),
 		field("Source", txfmt.Source(e)),
 		field("Tax treatment", opt(e.TaxTreatment)),
@@ -468,26 +722,18 @@ func detailLines(s State, width, height int) []string {
 		lines = append(lines, field("", p.dim+"categorised by hand"+p.reset))
 	}
 
-	// Sized to fit 100 columns with every figure whole: 97 wide.
-	lines = append(lines, "", "  "+p.dim+
+	// Sized to fit 100 columns, card and all, with every figure whole.
+	lines = append(lines, "", p.dim+
 		Pad("DIR", 5)+Pad("ROLE", 9)+padLeft("AMOUNT", 18)+"  "+Pad("ASSET", 9)+
 		padLeft("VALUE", 13)+padLeft("PROCEEDS", 13)+padLeft("COST BASIS", 13)+padLeft("GAIN/LOSS", 13)+p.reset)
 	for _, leg := range e.Legs {
-		lines = append(lines, "  "+
+		lines = append(lines,
 			Pad(leg.Direction, 5)+Pad(output.Ellipsize(leg.Role, 8), 9)+padLeft(output.Qty(leg.Amount), 18)+"  "+
-			Pad(output.Ellipsize(assets.Symbol(leg.AssetID), 8), 9)+
-			padLeft(output.Money(leg.Value), 13)+padLeft(output.Money(leg.Proceeds), 13)+
-			padLeft(output.Money(leg.CostBasis), 13)+padLeft(output.Signed(leg.GainLoss), 13))
+				Pad(output.Ellipsize(assets.Symbol(leg.AssetID), 8), 9)+
+				padLeft(output.Money(leg.Value), 13)+padLeft(output.Money(leg.Proceeds), 13)+
+				padLeft(output.Money(leg.CostBasis), 13)+padLeft(output.Signed(leg.GainLoss), 13))
 	}
-
-	for len(lines) < height-1 {
-		lines = append(lines, "")
-	}
-	position := fmt.Sprintf("%d of %d", s.Cursor+1, len(s.Data.Transactions))
-	if s.Data.TxNextCursor != nil {
-		position += "+"
-	}
-	return append(lines, statusBar(s, position, "↑↓ previous / next · Esc back"))
+	return p.card(txfmt.Type(e), txfmt.When(e.Ts)+" UTC", width, padLines(lines, max(1, height-cardExtraRows)))
 }
 
 // ---------- filter form ----------
@@ -499,13 +745,9 @@ var fieldHint = map[int]string{
 	fieldSearch:   "any — free text",
 }
 
-func filterLines(s State, height int) []string {
-	p := paletteOf(s)
+func filterCard(s State, p palette, width, height int) []string {
 	f := s.Filter
-	lines := []string{
-		p.bold + "Filter transactions" + p.reset + "  " + p.dim + s.SelectedEntity.Name + p.reset,
-		"",
-	}
+	var lines []string
 	marker := func(field int) string {
 		if f.Field == field {
 			return p.cyan + "▸ " + p.reset
@@ -544,13 +786,13 @@ func filterLines(s State, height int) []string {
 				value = o.label
 			}
 		}
-		lines = append(lines, "  "+marker(field)+label+" "+value)
+		lines = append(lines, marker(field)+label+" "+value)
 
 		// Under the category field, what the typed text could be.
 		if field == fieldCategory && focused {
 			token := categoryToken(f.Draft.Category)
 			matches := CategoryMatches(f.Draft.Category)
-			indent := strings.Repeat(" ", 16)
+			indent := strings.Repeat(" ", 14)
 			switch {
 			case token == "":
 				lines = append(lines, indent+p.dim+"type to search "+strconv.Itoa(len(Categories))+" categories · → completes · , for another"+p.reset)
@@ -567,14 +809,11 @@ func filterLines(s State, height int) []string {
 		}
 	}
 
-	lines = append(lines, "", "  "+marker(fieldClear)+"Clear all filters")
+	lines = append(lines, "", marker(fieldClear)+"Clear all filters")
 	if f.Error != "" {
-		lines = append(lines, "", "  "+p.red+f.Error+p.reset)
+		lines = append(lines, "", p.red+f.Error+p.reset)
 	}
-	for len(lines) < height-1 {
-		lines = append(lines, "")
-	}
-	return append(lines, p.dim+"↑↓ field · ←→ change · type to edit · ^U clear field · ⏎ apply · Esc cancel"+p.reset)
+	return p.card("Filter transactions", "Esc cancel", width, padLines(lines, max(1, height-cardExtraRows)))
 }
 
 // ---------- chrome ----------
@@ -597,29 +836,28 @@ func statusBar(s State, left, hints string) string {
 	return p.dim + left + "  ·  " + hints + p.reset
 }
 
-func helpLines(p palette) []string {
-	return []string{
-		p.bold + "Grubless — keys" + p.reset,
+func helpScreen(s State, p palette, width, height int) []string {
+	keys := []string{
+		"↑ ↓ / k j      move",
+		"PgUp PgDn      page",
+		"Home End       jump to first / last",
+		"⏎              open the selected entity",
+		"↹ / ← → / h l  switch tab",
+		"1..6           jump to a tab",
+		"⏎              open the selected transaction (Transactions tab)",
+		"[ ]            narrow / widen the chart's time range",
+		"r              reload this entity",
+		"t              switch theme (Terminal / Cypherpunk)",
+		"f or /         filter transactions (Transactions tab)",
+		"s              sync every enabled source, and watch it",
+		"q / Esc        back to entities, or quit from there",
+		"Ctrl-C         quit immediately",
 		"",
-		"  ↑ ↓ / k j      move",
-		"  PgUp PgDn      page",
-		"  Home End       jump to first / last",
-		"  ⏎              open the selected entity",
-		"  ↹ / ← → / h l  switch tab",
-		"  1..6           jump to a tab",
-		"  ⏎              open the selected transaction (Transactions tab)",
-		"  [ ]            narrow / widen the chart's time range",
-		"  r              reload this entity",
-		"  t              switch theme (Terminal / Cypherpunk)",
-		"  f or /         filter transactions (Transactions tab)",
-		"  s              sync every enabled source, and watch it",
-		"  q / Esc        back to entities, or quit from there",
-		"  Ctrl-C         quit immediately",
-		"",
-		"  " + p.dim + "Scriptable commands still exist: grubless --help" + p.reset,
-		"",
-		p.dim + "press any key" + p.reset,
+		p.dim + "Scriptable commands still exist: grubless --help" + p.reset,
 	}
+	head := []string{p.title() + "  " + p.dim + "keys" + p.reset, ""}
+	content := p.card("Keys", "", width, padLines(keys, max(1, min(len(keys), height-len(head)-1-cardExtraRows))))
+	return page(head, content, p.dim+"press any key"+p.reset, height)
 }
 
 func padLeft(text string, width int) string {

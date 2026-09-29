@@ -325,6 +325,7 @@ func (a *app) loadEntityData(entity api.Entity) {
 			next.Data = d
 			next.Loading = false
 			a.setState(next)
+			a.loadExtras(entity)
 		})
 	}()
 }
@@ -336,6 +337,32 @@ func into[T any](dst *T) func([]byte) error {
 		*dst = v
 		return err
 	}
+}
+
+// loadExtras fetches the overview's breakdown and price coverage, each on
+// its own: they're slower than the rest (the breakdown walks the whole
+// ledger) and only decorate the overview, so the screen doesn't wait for
+// them. Each lands if the entity it was for is still the one open.
+func (a *app) loadExtras(entity api.Entity) {
+	base := "/entities/" + entity.ID
+	apply := func(update func(*EntityData)) {
+		a.post(func() {
+			if a.state.SelectedEntity == nil || a.state.SelectedEntity.ID != entity.ID {
+				return
+			}
+			next := a.state
+			update(&next.Data)
+			a.setState(next)
+		})
+	}
+	go func() {
+		b, err := getJSON[api.ActivityBreakdown](a.client, base+"/activity-breakdown")
+		apply(func(d *EntityData) { d.Breakdown, d.BreakdownFailed = &b, err != nil })
+	}()
+	go func() {
+		c, err := getJSON[api.PriceCoverage](a.client, base+"/price-coverage")
+		apply(func(d *EntityData) { d.Coverage, d.CoverageFailed = &c, err != nil })
+	}()
 }
 
 // txPageSize is small next to the API's 2000: the tab only needs a

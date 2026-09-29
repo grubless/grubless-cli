@@ -168,6 +168,16 @@ const server = createServer((req, res) => {
     if (rest === "portfolio-history") return send(res, 200, id === ACME ? HISTORY : []);
     if (rest === "tax-settings") return id === ACME ? send(res, 200, { entityId: id, baseCurrency: "aud", financialYearStartMonth: 7 }) : send(res, 404, { error: "no settings" });
 
+    // The overview's extras (Go TUI only). The breakdown is per day and
+    // category, as the API's; the stub's covers the history's span.
+    if (rest === "activity-breakdown") {
+      if (id !== ACME) return send(res, 200, { currency: "aud", totalEvents: 0, labels: {}, category: [], source: [], tag: [] });
+      const kinds = ["trade", "staking_reward", "transfer", "send", "receive", "fee", "airdrop", "income"];
+      const category = HISTORY.flatMap((p, i) => kinds.slice(0, 1 + (i % kinds.length)).map((k, j) => ({ d: p.date, k, v: 1000 / (j + 1) + (i % 7) * 10 })));
+      return send(res, 200, { currency: "aud", totalEvents: 1234, labels: {}, category, source: [], tag: [] });
+    }
+    if (rest === "price-coverage") return send(res, 200, id === ACME ? { total: 415, priced: 412, missing: 3 } : { total: 0, priced: 0, missing: 0 });
+
     if (rest === "tx-events") {
       // Production's shape (probed 2026-09-30): {events, assets, nextCursor},
       // cursor-paged. Only the Go build calls this; see GO_ONLY below.

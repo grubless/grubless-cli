@@ -273,7 +273,9 @@ func TestRendering(t *testing.T) {
 		t.Error("sources should show their sync status")
 	}
 
-	if ViewportRows(24) != 20 || ViewportRows(1) != 1 || ViewportRows(0) != 1 {
+	// Title, tabs and status bar, then the list card's column header,
+	// border and shadow rows: seven.
+	if ViewportRows(24) != 17 || ViewportRows(1) != 1 || ViewportRows(0) != 1 {
 		t.Error("viewport leaves room for the chrome, and never drops below one row")
 	}
 }
@@ -325,60 +327,75 @@ func TestChartTab(t *testing.T) {
 			st.Data.History = []api.PortfolioHistoryPoint{{Date: "2026-08-07", Value: s("721022.174"), CumulativeIncome: s("4321.5"), UnrealizedPL: s(pl)}}
 		})
 	}
-	if out := text(point("12345.67"), 120, 20); !strings.Contains(out, "VALUE 721,022.17") || !strings.Contains(out, "INCOME 4,321.50") || !strings.Contains(out, "UNREALISED +12,345.67") {
+	if out := text(point("12345.67"), 120, 20); !strings.Contains(out, "721,022.17   unrealised +12,345.67   income 4,321.50") {
 		t.Error("the header should carry today's exact, signed figures")
 	}
-	if !strings.Contains(text(point("-987.65"), 120, 20), "UNREALISED -987.65") || !strings.Contains(text(point("0"), 120, 20), "UNREALISED 0.00") {
+	if !strings.Contains(text(point("-987.65"), 120, 20), "unrealised -987.65") || !strings.Contains(text(point("0"), 120, 20), "unrealised 0.00") {
 		t.Error("a loss keeps its sign; zero stays bare")
 	}
 
 	// Not a list: no reverse-video row across the plot (the tab bar and
 	// range strip reverse legitimately, above it).
 	st = chart(func(st *State) { st.Data.History = history([2]string{"2026-01-01", "1"}, [2]string{"2026-01-02", "2"}) })
-	if strings.Contains(strings.Join(Render(st, 100, 20)[4:19], "\n"), "[7m") || RowCount(st) != 0 {
+	// The tab bar and the range control reverse legitimately; a line of the
+	// plot never should.
+	plotHighlighted := false
+	for _, line := range Render(st, 100, 20) {
+		if brailleInk.MatchString(line) && strings.Contains(line, reverse) {
+			plotHighlighted = true
+		}
+	}
+	if plotHighlighted || RowCount(st) != 0 {
 		t.Error("the plot must never be highlighted as a row")
 	}
 	if !strings.Contains(text(st, 100, 20), "2 days") {
 		t.Error("the status bar counts days on the chart")
 	}
 
-	tile := func(hs ...api.Holding) State {
-		return chart(func(st *State) {
-			st.Data.History = history([2]string{"2026-01-01", "1000"}, [2]string{"2026-08-01", "5000"})
-			st.Data.Holdings = hs
-		})
-	}
-	lines := strings.Split(text(tile(holding("SOL", s("solana"), "900"), holding("BTC", s("bitcoin"), "100")), 100, 30), "\n")
-	tileAt, plotAt := -1, -1
-	for i, l := range lines {
-		if tileAt < 0 && strings.Contains(l, "HOLDINGS") {
-			tileAt = i
+	// The web overview's second card: the activity breakdown, beside the
+	// chart when there's room for both.
+	breakdown := chart(func(st *State) {
+		st.Data.History = history([2]string{"2026-01-01", "1000"}, [2]string{"2026-08-01", "5000"})
+		var rows []api.BreakdownBucket
+		for i, k := range []string{"trade", "staking_reward", "transfer", "send", "receive", "fee", "airdrop"} {
+			rows = append(rows, api.BreakdownBucket{Day: "2026-03-01", Key: k, Value: float64(700 - i*100)})
 		}
-		if plotAt < 0 && brailleInk.MatchString(l) {
-			plotAt = i
+		// Years back, but the range is ALL, so it counts — and it's the
+		// largest, so it leads.
+		rows = append(rows, api.BreakdownBucket{Day: "2019-01-01", Key: "mining", Value: 99999})
+		st.Data.Breakdown = &api.ActivityBreakdown{TotalEvents: 1234, Category: rows}
+		st.Data.Coverage = &api.PriceCoverage{Total: 415, Priced: 412, Missing: 3}
+		st.Data.Sources = []api.Source{{ID: "a", LastSyncedAt: s("2026-08-09T01:00:00.000Z")}, {ID: "b", LastSyncedAt: s("2026-08-01T00:00:00.000Z")}}
+	})
+	wide := text(breakdown, 140, 32)
+	for _, want := range []string{"Portfolio value", "Activity breakdown", "Mining", "Trade", "Staking Reward", "Other (3)", "Connected sources", "Transactions", "1,234", "Last synced", "3 hours ago", "Price coverage", "412 / 415", "3 missing"} {
+		if !strings.Contains(wide, want) {
+			t.Errorf("the wide overview should show %q", want)
 		}
 	}
-	// Below the plot, and the plot keeps the larger share.
-	if plotAt < 0 || tileAt <= plotAt || tileAt-plotAt <= (30-4)/2 {
-		t.Errorf("tile at %d, plot at %d", tileAt, plotAt)
+	// Largest first, with the web's category names rather than keys.
+	if strings.Index(wide, "Mining") > strings.Index(wide, "Trade") || strings.Contains(wide, "staking_reward") {
+		t.Error("the breakdown should be largest first, labelled as the web labels it")
 	}
-
-	out := text(tile(holding("SMALL", s("solana"), "5"), holding("BIG", s("solana"), "5000")), 100, 30)
-	if strings.Index(out, "BIG") > strings.Index(out, "SMALL") {
-		t.Error("the tile is ordered by value, largest first")
+	// A narrower terminal gives the chart the width, and keeps the figures.
+	if narrow := text(breakdown, 100, 32); strings.Contains(narrow, "Activity breakdown") || !strings.Contains(narrow, "Price coverage") {
+		t.Error("below 110 columns the breakdown stands down, the stat cards stay")
 	}
-
-	var many []api.Holding
-	for i := 0; i < 30; i++ {
-		many = append(many, holding(fmt.Sprintf("TOK%d", i), s("solana"), fmt.Sprint(1000-i)))
+	// A short one keeps the chart, and the status bar.
+	short := Render(breakdown, 140, 14)
+	if strings.Contains(StripAnsi(strings.Join(short, "")), "Connected sources") || !strings.Contains(StripAnsi(short[13]), "r reload") {
+		t.Error("a short terminal drops the stat cards first, and keeps the status bar")
 	}
-	if !regexp.MustCompile(`and \d+ more`).MatchString(text(tile(many...), 100, 30)) {
-		t.Error("the tile should count what it couldn't fit")
+	// While the extras load, and if they fail, the cards say so.
+	loading := breakdown
+	loading.Data.Breakdown, loading.Data.Coverage = nil, nil
+	if out := text(loading, 140, 32); !strings.Contains(out, "Loading…") || !strings.Contains(out, "…") {
+		t.Error("the breakdown should say it's loading")
 	}
-
-	short := Render(tile(holding("SOL", s("solana"), "900")), 100, 10)
-	if len(short) != 10 || strings.Contains(StripAnsi(strings.Join(short, "")), "HOLDINGS") || !strings.Contains(StripAnsi(short[9]), "r reload") {
-		t.Error("a short terminal drops the tile, and the status bar survives")
+	failed := loading
+	failed.Data.BreakdownFailed, failed.Data.CoverageFailed = true, true
+	if !strings.Contains(text(failed, 140, 32), "Couldn't load the breakdown.") {
+		t.Error("a failed breakdown should say so")
 	}
 
 	empty := Render(chart(func(st *State) {}), 100, 20)

@@ -80,6 +80,43 @@ design. `tty-parity.py` also drives the new tab in a Go-only session with
 asserted screens. The TUI render and reduce golden files now hold Go's
 output (see `internal/tui/golden_test.go` for how that switch was checked).
 
+## Go-only: the TUI's card layout
+
+The TUI is laid out like the web app: cards, after
+`apps/web/components/ui/card.tsx` in the main repo. Each card is a bordered
+box with its title in the top border (a terminal can't spare a row per
+title), and room at the other end of the border for a total, a count, or
+which filters are on. The tab bar is the web's segmented control, and the
+first tab is **Overview**, as the web's is:
+
+- A **Portfolio value** card: headline value, unrealised gain and income,
+  the range control, and the chart.
+- An **Activity breakdown** card beside it, on terminals 110 columns or
+  wider. It shows transaction value by category over the chart's range,
+  largest first, the top five in the web's category colours and the rest as
+  "Other", as the web's donut groups them. It uses bars rather than a donut,
+  since a terminal draws bars better. The category names are the web's,
+  copied as strings from the main repo's `transaction-categories.ts`, and
+  only the names: nothing of the engine reaches this public client.
+- Four **stat cards**: Connected sources, Transactions, Last synced (the
+  web's wording, "3 hours ago") and Price coverage ("412 / 415, 3 missing").
+  The breakdown and coverage come from `/activity-breakdown` and
+  `/price-coverage`. They load after the entity opens and fill in when they
+  arrive, since the breakdown can take seconds on a large ledger.
+
+The list tabs are cards titled as the web titles them ("Current holdings",
+with its total, and so on), and the picker, help, transaction detail and
+filter form are cards too. The Overview drops the old holdings tile, as the
+web's does, and on a small terminal the breakdown gives way first, then the
+stat cards, so the chart keeps its room.
+
+This ended the screen-by-screen comparison of the TUI with the Node build:
+the layouts no longer correspond. `tty-parity.py` now checks the TUI in a
+Go-only session that asserts what each screen must show. The render golden
+files hold Go's output, and a test holds every fixture screen, in both
+themes, to exactly its height and width. Command parity and the key-handling
+comparison are unaffected.
+
 ## Go-only: TUI themes
 
 The TUI has two themes, after the web app's:

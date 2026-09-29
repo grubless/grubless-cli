@@ -210,3 +210,34 @@ func projectForGolden(s State) map[string]any {
 		"showHelp": s.ShowHelp, "quit": s.Quit, "range": s.Range, "holdings": len(s.Data.Holdings),
 	}
 }
+
+// TestRenderInvariants holds every fixture screen, in both themes, to the
+// frame contract the painter relies on: exactly `height` lines, none wider
+// than the terminal. The fixtures include the awkward sizes (a 1-row
+// terminal, a 20-column one) where a layout's arithmetic goes negative.
+func TestRenderInvariants(t *testing.T) {
+	Now = func() time.Time { return fixedNow }
+	defer func() { Now = time.Now }()
+
+	var screens []struct {
+		State  State `json:"state"`
+		Width  int   `json:"width"`
+		Height int   `json:"height"`
+	}
+	golden.Load(t, "testdata/render.json.gz", &screens)
+	for i, sc := range screens {
+		for _, theme := range []string{ThemeTerminal, ThemeCypher} {
+			st := sc.State
+			st.Theme, st.TrueColour = theme, true
+			lines := Render(st, sc.Width, sc.Height)
+			if len(lines) != sc.Height {
+				t.Errorf("screen #%d (%s, %dx%d): %d lines", i, theme, sc.Width, sc.Height, len(lines))
+			}
+			for j, line := range lines {
+				if w := VisibleWidth(line); w > sc.Width {
+					t.Errorf("screen #%d (%s, %dx%d) line %d: %d wide", i, theme, sc.Width, sc.Height, j, w)
+				}
+			}
+		}
+	}
+}

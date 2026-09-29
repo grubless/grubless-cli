@@ -196,3 +196,30 @@ type TxAsset struct {
 	Symbol string  `json:"symbol"`
 	Chain  *string `json:"chain"`
 }
+
+// ---------- Dashboard extras ----------
+
+// ActivityBreakdown is GET /entities/:id/activity-breakdown: transaction
+// value per day per category, source and tag, for the web's "Activity
+// breakdown" card. Values are plain numbers here, not decimal strings — the
+// server sums them as floats for a chart, and nothing reads them as figures.
+type ActivityBreakdown struct {
+	Currency    string            `json:"currency"`
+	TotalEvents int               `json:"totalEvents"`
+	Labels      map[string]string `json:"labels"`
+	Category    []BreakdownBucket `json:"category"`
+}
+
+type BreakdownBucket struct {
+	Day   string  `json:"d"`
+	Key   string  `json:"k"`
+	Value float64 `json:"v"`
+}
+
+// PriceCoverage is GET /entities/:id/price-coverage: how many (asset, day)
+// pairs the ledger needs a price for, and how many it has.
+type PriceCoverage struct {
+	Total   int `json:"total"`
+	Priced  int `json:"priced"`
+	Missing int `json:"missing"`
+}
