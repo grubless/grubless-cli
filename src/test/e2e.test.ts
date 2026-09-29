@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { CLI, cliCommand } from "./cli-bin.js";
 import { describe as vitestDescribe, it, expect, beforeAll } from "vitest";
 
 /**
@@ -50,7 +51,6 @@ import { describe as vitestDescribe, it, expect, beforeAll } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
-const CLI = join(here, "..", "..", "dist", "index.js");
 
 const API_URL = process.env.GRUBLESS_E2E_API_URL;
 
@@ -84,7 +84,7 @@ interface RunResult {
 /** Runs the built CLI with a token, capturing output and the real exit code. */
 async function run(args: string[], env: Record<string, string> = {}): Promise<RunResult> {
   try {
-    const { stdout, stderr } = await execFileAsync(process.execPath, [CLI, ...args, "--api-url", baseUrl], {
+    const { stdout, stderr } = await execFileAsync(...cliCommand([...args, "--api-url", baseUrl]), {
       env: {
         ...process.env,
         GRUBLESS_TOKEN: token,

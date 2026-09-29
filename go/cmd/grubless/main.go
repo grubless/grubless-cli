@@ -1,0 +1,238 @@
+// Command grubless is the Go port spike of the Grubless CLI: auth and
+// `entities list` end to end, everything else reports itself as not ported.
+//
+// Dispatch order mirrors src/index.ts exactly, because CI pins it: the
+// credential is resolved BEFORE the command, so an unknown command while
+// signed out exits 3, not 2.
+package main
+
+import (
+	"errors"
+	"fmt"
+	"math"
+	"os"
+	"runtime/debug"
+	"strconv"
+	"strings"
+
+	"github.com/grubless/grubless-cli/go/internal/args"
+	"github.com/grubless/grubless-cli/go/internal/client"
+	"github.com/grubless/grubless-cli/go/internal/commands"
+	"github.com/grubless/grubless-cli/go/internal/config"
+	"github.com/grubless/grubless-cli/go/internal/output"
+)
+
+// reports mirrors REPORTS in src/commands/reports.ts.
+var reports = []string{
+	"capital-gains", "income", "fees", "expenses", "buy-sell",
+	"gifts-donations-lost", "other-gains", "transaction-history",
+	"balances-per-source", "beginning-of-year-holdings", "end-of-year-holdings",
+	"highest-balance", "division-70-trading-stock", "ato-mytax",
+}
+
+const usageFormat = `grubless %s — crypto tax for entities
+
+USAGE
+  grubless <command> [options]
+
+COMMANDS
+  auth login [--token <t>]      Authenticate with an API token
+  auth logout                   Forget the stored token
+  auth whoami                   Show the current account and its entities
+
+  entities list                 List entities this account can reach
+
+  sources list                  List an entity's sources
+  sources sync                  Queue a sync (--source <id> | --all)
+  import <file.csv>             Upload a CSV into a csv_import source
+
+  holdings                      Current positions, with reconciliation flags
+  portfolio                     Value over time (a chart, or --json for the series)
+  tax-summary                   Per-financial-year tax position
+  warnings                      Data-quality issues blocking a clean filing
+
+  report <name>                 Download a report (see REPORTS below)
+
+COMMON OPTIONS
+  --entity <id|name>            Target entity; name may be an unambiguous prefix
+  --all-entities                Every entity this account can reach
+  --json                        Machine-readable output on stdout
+  --api-url <url>               Override the API endpoint
+  -h, --help                    Show this help
+  -v, --version                 Show the version
+
+REPORT OPTIONS
+  --year <startYear>            Financial year, e.g. 2025
+  --out <path|dir>              Write to a file, or a directory with --all-entities
+  --json                        Rows as JSON on stdout, including --all-entities
+                                (not for bundle / ato-mytax / division-70: PDF and ZIP)
+
+SYNC / IMPORT OPTIONS
+  --wait                        Block until the queued work finishes
+  --full                        Re-fetch entire history, ignoring last sync
+  --timeout <minutes>           How long --wait waits (default 35)
+
+PORTFOLIO OPTIONS
+  --range <key>                 24h, 1w, 1m, 3m, 6m, 1y, fy, all (default all)
+
+WARNINGS OPTIONS
+  --fail-on-blocking            Exit 4 if blocking issues exist (CI gate)
+
+REPORTS
+  %s, bundle
+
+ENVIRONMENT
+  GRUBLESS_TOKEN                API token; takes precedence over stored config
+  GRUBLESS_API_URL              Default API endpoint
+  NO_COLOR                      Disable colour
+
+EXIT CODES
+  0 ok   1 failed   2 usage   3 auth   4 blocking warnings   5 upgrade required
+
+EXAMPLES
+  # Every client's capital gains for FY2025, one directory per entity
+  grubless report capital-gains --all-entities --year 2025 --out ./clients/
+
+  # The same data as one JSON document on stdout — for jq, or an LLM tool
+  grubless report capital-gains --all-entities --year 2025 --json | jq '.[].entity.name'
+
+  # Pre-filing gate for CI
+  grubless warnings --entity "Node Integration" --fail-on-blocking
+
+  # Sync everything and wait for it
+  grubless sources sync --entity acme --all --wait
+`
+
+func usage() string {
+	return fmt.Sprintf(usageFormat, client.Version, strings.Join(reports, ", "))
+}
+
+var options = map[string]args.Option{
+	"entity":           {Kind: args.String},
+	"all-entities":     {Kind: args.Bool},
+	"source":           {Kind: args.String},
+	"all":              {Kind: args.Bool},
+	"full":             {Kind: args.Bool},
+	"wait":             {Kind: args.Bool},
+	"timeout":          {Kind: args.String},
+	"year":             {Kind: args.String},
+	"range":            {Kind: args.String},
+	"out":              {Kind: args.String},
+	"token":            {Kind: args.String},
+	"api-url":          {Kind: args.String},
+	"json":             {Kind: args.Bool},
+	"fail-on-blocking": {Kind: args.Bool},
+	"help":             {Kind: args.Bool, Short: 'h'},
+	"version":          {Kind: args.Bool, Short: 'v'},
+}
+
+func run(argv []string) (int, error) {
+	p, err := args.Parse(argv, options)
+	if err != nil {
+		return 0, output.Errorf(output.UsageError, "%v\n\nRun `grubless --help`.", err)
+	}
+
+	if p.Bools["version"] {
+		output.Out(client.Version)
+		return output.Ok, nil
+	}
+	if p.Bools["help"] {
+		output.Out(usage())
+		return output.Ok, nil
+	}
+
+	// No command: the TUI on a terminal, usage otherwise.
+	if len(p.Positionals) == 0 && !output.IsTerminal(os.Stdin) {
+		output.Note(usage())
+		return output.UsageError, nil
+	}
+
+	if t, ok := p.Str("timeout"); ok && t != "" {
+		// Number() in the TS. ParseFloat is close, but accepts "NaN" and
+		// "Inf", which Number.isFinite would have refused.
+		minutes, err := strconv.ParseFloat(strings.TrimSpace(t), 64)
+		if err != nil || math.IsNaN(minutes) || math.IsInf(minutes, 0) || minutes <= 0 {
+			return 0, output.Errorf(output.UsageError, "--timeout must be a positive number of minutes, got \"%s\".", t)
+		}
+	}
+
+	var command, sub string
+	if len(p.Positionals) > 0 {
+		command = p.Positionals[0]
+	}
+	if len(p.Positionals) > 1 {
+		sub = p.Positionals[1]
+	}
+	apiURL, hasAPIURL := p.Str("api-url")
+	asJSON := p.Bools["json"]
+
+	// The only commands that work without an existing credential.
+	if command == "auth" && sub == "login" {
+		token, _ := p.Str("token")
+		return commands.AuthLogin(token, apiURL, hasAPIURL)
+	}
+	if command == "auth" && sub == "logout" {
+		return commands.AuthLogout()
+	}
+
+	cfg := config.Load(apiURL, hasAPIURL)
+	if cfg.Token == "" {
+		return 0, output.Errorf(output.AuthFailure, "Not signed in.\nRun `grubless auth login`, or set GRUBLESS_TOKEN.")
+	}
+	c := client.New(cfg.APIURL, cfg.Token)
+
+	if len(p.Positionals) == 0 {
+		return 0, notPorted("the interactive interface")
+	}
+
+	switch command {
+	case "auth":
+		if sub == "whoami" {
+			return commands.AuthWhoami(c, asJSON)
+		}
+		return 0, output.Errorf(output.UsageError, "Unknown: auth %s. Try login, logout or whoami.", sub)
+
+	case "entities":
+		if sub == "" || sub == "list" {
+			return commands.EntitiesList(c, asJSON)
+		}
+		return 0, output.Errorf(output.UsageError, "Unknown: entities %s. Only `list` exists today.", sub)
+
+	case "sources", "import", "holdings", "portfolio", "tax-summary", "warnings", "report":
+		return 0, notPorted("`" + command + "`")
+	}
+	return 0, output.Errorf(output.UsageError, "Unknown command \"%s\".\n\nRun `grubless --help`.", command)
+}
+
+func notPorted(what string) error {
+	return output.Errorf(output.Failure, "%s isn't ported to the Go spike yet. Use the Node CLI.", what)
+}
+
+func main() {
+	os.Exit(exitCode())
+}
+
+func exitCode() (code int) {
+	// A Go panic exits 2 by default — which is this CLI's *usage error* code.
+	// A crash that tells CI "you passed a bad flag" is exactly the kind of
+	// lie README § Exit codes exists to prevent, so map it to 1.
+	defer func() {
+		if r := recover(); r != nil {
+			output.Note(fmt.Sprintf("panic: %v\n%s", r, debug.Stack()))
+			code = output.Failure
+		}
+	}()
+
+	code, err := run(os.Args[1:])
+	if err == nil {
+		return code
+	}
+	var cliErr *output.CliError
+	if errors.As(err, &cliErr) {
+		// Already phrased for a human — no stack trace.
+		output.Note(cliErr.Message)
+		return cliErr.ExitCode
+	}
+	output.Note(err.Error())
+	return output.Failure
+}

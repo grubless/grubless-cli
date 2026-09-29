@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { CLI, cliCommand } from "./cli-bin.js";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 /**
@@ -23,7 +24,6 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
-const CLI = join(here, "..", "..", "dist", "index.js");
 
 /** Any well-formed token: the stub never looks at it. */
 const TOKEN = "grb_stub_token_not_verified_by_the_stub_server";
@@ -54,8 +54,7 @@ describe("version handshake", () => {
 
   it("warns on stderr when the server requires a newer CLI, without failing", async () => {
     const { stdout, stderr } = await execFileAsync(
-      process.execPath,
-      [CLI, "entities", "list", "--json", "--api-url", stubUrl],
+      ...cliCommand(["entities", "list", "--json", "--api-url", stubUrl]),
       {
         env: {
           ...process.env,
