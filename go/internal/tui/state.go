@@ -6,6 +6,7 @@ import (
 
 	"github.com/grubless/grubless-cli/go/internal/api"
 	"github.com/grubless/grubless-cli/go/internal/timerange"
+	"github.com/grubless/grubless-cli/go/internal/txfmt"
 )
 
 // TUI state and the pure reducer over it — separated from the terminal and
@@ -14,11 +15,13 @@ import (
 
 type Tab string
 
-// Portfolio leads, as on the web dashboard.
-var Tabs = []Tab{"chart", "holdings", "warnings", "tax", "sources"}
+// Portfolio leads, as on the web dashboard. Transactions come last: the
+// other tabs summarise, this one is the ledger they're summaries of.
+var Tabs = []Tab{"chart", "holdings", "warnings", "tax", "sources", "transactions"}
 
 var TabLabel = map[Tab]string{
 	"chart": "Portfolio", "holdings": "Holdings", "warnings": "Warnings", "tax": "Tax", "sources": "Sources",
+	"transactions": "Transactions",
 }
 
 // IsList: every tab but the chart is a scrollable list of rows.
@@ -37,6 +40,15 @@ type EntityData struct {
 	History       []api.PortfolioHistoryPoint        `json:"history"`
 	// Nil until loaded, or when the entity has no settings row.
 	Settings *api.EntityTaxSettings `json:"settings"`
+
+	// Transactions, newest first, as far as they've been paged in. The tab
+	// loads one page with the rest of the entity and fetches the next as
+	// the cursor nears the end — an entity can have tens of thousands.
+	Transactions []api.TxEvent `json:"transactions"`
+	TxAssets     txfmt.Assets  `json:"-"`
+	// TxNextCursor is where the next page starts; nil when there isn't one.
+	TxNextCursor  *string `json:"txNextCursor"`
+	TxLoadingMore bool    `json:"txLoadingMore"`
 }
 
 type State struct {
@@ -59,6 +71,18 @@ type State struct {
 	// Tick drives the spinner, advanced by a timer rather than by any key —
 	// a twenty-second load has to look alive without input.
 	Tick int `json:"tick"`
+	// Detail shows the transaction under the cursor, full screen.
+	Detail bool `json:"detail"`
+	// Theme is one of Themes. The app always sets it (to DefaultTheme when
+	// nobody chose); "" renders in the terminal's own colours.
+	Theme string `json:"theme"`
+	// TrueColour is whether the terminal takes 24-bit colour, which a
+	// theme with exact colours needs to show them exactly.
+	TrueColour bool `json:"trueColour"`
+	// TxFilter is the transactions filter in force for this entity.
+	TxFilter TxFilter `json:"txFilter"`
+	// Filter is the open filter form, or nil.
+	Filter *FilterForm `json:"filter"`
 }
 
 func InitialState() State {
@@ -94,6 +118,8 @@ func RowCount(s State) int {
 		return len(s.Data.Tax)
 	case "sources":
 		return len(s.Data.Sources)
+	case "transactions":
+		return len(s.Data.Transactions)
 	}
 	// The chart isn't a list.
 	return 0
@@ -109,6 +135,13 @@ const (
 	ActSync       Action = "sync"
 	ActOpenEntity Action = "openEntity"
 	ActQuit       Action = "quit"
+	// ActLoadMore asks for the next page of transactions.
+	ActLoadMore Action = "loadMore"
+	// ActTheme asks for the new theme to be applied and saved.
+	ActTheme Action = "theme"
+	// ActApplyFilter asks for the transactions to be refetched under the
+	// state's TxFilter.
+	ActApplyFilter Action = "applyFilter"
 )
 
 // backToPicker is where q and Esc go from inside an entity — clearing data,
@@ -117,7 +150,41 @@ func backToPicker(s State) State {
 	s.SelectedEntity = nil
 	s.Cursor, s.Offset = 0, 0
 	s.Data = EntityData{}
+	s.Detail = false
+	// A filter belongs to the entity it was set on.
+	s.TxFilter, s.Filter = TxFilter{}, nil
 	return s
+}
+
+// withMore requests the next page of transactions once the cursor is within
+// a screenful of the end, so scrolling rarely has to wait on it.
+func withMore(s State, viewportRows int) (State, Action) {
+	d := s.Data
+	if s.SelectedEntity == nil || s.Tab != "transactions" || d.TxNextCursor == nil || d.TxLoadingMore || s.Loading {
+		return s, ActNone
+	}
+	if s.Cursor < len(d.Transactions)-max(1, viewportRows) {
+		return s, ActNone
+	}
+	s.Data.TxLoadingMore = true
+	return s, ActLoadMore
+}
+
+// reduceDetail handles keys while a transaction is open: move to the
+// previous or next one, or close. Anything else is ignored rather than
+// acting on the tab hidden behind it.
+func reduceDetail(state State, key Key, viewportRows int) (State, Action) {
+	next := state
+	switch key.Name {
+	case "escape", "q", "return":
+		next.Detail = false
+		return next, ActNone
+	case "up", "k":
+		return withMore(moveCursor(next, -1, viewportRows), viewportRows)
+	case "down", "j":
+		return withMore(moveCursor(next, 1, viewportRows), viewportRows)
+	}
+	return next, ActNone
 }
 
 // Reduce is the whole interaction model, as one pure function.
@@ -133,6 +200,12 @@ func Reduce(state State, key Key, viewportRows int) (State, Action) {
 	if key.Ctrl && (key.Name == "c" || key.Name == "d") {
 		next.Quit = true
 		return next, ActQuit
+	}
+	if state.Filter != nil {
+		return reduceFilter(state, key)
+	}
+	if state.Detail {
+		return reduceDetail(state, key, viewportRows)
 	}
 
 	switch key.Name {
@@ -155,14 +228,29 @@ func Reduce(state State, key Key, viewportRows int) (State, Action) {
 		next.ShowHelp = true
 		return next, ActNone
 
+	case "f", "/":
+		if state.SelectedEntity == nil || state.Tab != "transactions" || state.Loading {
+			return next, ActNone
+		}
+		next.Filter = openFilter(state)
+		return next, ActNone
+
+	// Anywhere, like the web app's toggle — the theme is a preference about
+	// the whole interface, not about one screen of it.
+	case "t":
+		next.Theme = nextTheme(themeOrDefault(state.Theme))
+		next.Message = msg("Theme: " + ThemeLabel[next.Theme])
+		next.MessageKind = "info"
+		return next, ActTheme
+
 	case "up", "k":
 		return moveCursor(next, -1, viewportRows), ActNone
 	case "down", "j":
-		return moveCursor(next, 1, viewportRows), ActNone
+		return withMore(moveCursor(next, 1, viewportRows), viewportRows)
 	case "pageup":
 		return moveCursor(next, -viewportRows, viewportRows), ActNone
 	case "pagedown":
-		return moveCursor(next, viewportRows, viewportRows), ActNone
+		return withMore(moveCursor(next, viewportRows, viewportRows), viewportRows)
 
 	// Home/End move entityIndex AND cursor: the picker reads one, the tabs
 	// the other.
@@ -172,9 +260,13 @@ func Reduce(state State, key Key, viewportRows int) (State, Action) {
 	case "end":
 		last := max(0, RowCount(state)-1)
 		next.Cursor, next.EntityIndex = last, last
-		return clampScroll(next, viewportRows), ActNone
+		return withMore(clampScroll(next, viewportRows), viewportRows)
 
 	case "return":
+		if state.SelectedEntity != nil && state.Tab == "transactions" && !state.Loading && state.Cursor < len(state.Data.Transactions) {
+			next.Detail = true
+			return next, ActNone
+		}
 		if state.SelectedEntity == nil && len(state.Entities) > 0 {
 			// Out of range is reachable, and not only in theory: End on a tab
 			// sets entityIndex to that tab's last row, which can be past the
@@ -221,6 +313,7 @@ func Reduce(state State, key Key, viewportRows int) (State, Action) {
 		}
 		next.Loading = true
 		next.Message = nil
+		next.Detail = false
 		return next, ActReload
 
 	case "s":
@@ -305,4 +398,13 @@ func clampScroll(s State, viewportRows int) State {
 	}
 	s.Offset = max(0, offset)
 	return s
+}
+
+// themeOrDefault is the theme a state renders in: "" (as in a bare test
+// state) renders with the terminal's own colours. The app always sets one.
+func themeOrDefault(theme string) string {
+	if t, _ := NormaliseTheme(theme); t != "" {
+		return t
+	}
+	return ThemeTerminal
 }

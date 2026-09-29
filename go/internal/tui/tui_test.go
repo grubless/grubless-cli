@@ -154,11 +154,11 @@ func TestOpeningAnEntity(t *testing.T) {
 func TestTabs(t *testing.T) {
 	st := opened(nil)
 	var seen []Tab
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 6; i++ {
 		st = press(st, "tab")
 		seen = append(seen, st.Tab)
 	}
-	if !reflect.DeepEqual(seen, []Tab{"warnings", "tax", "sources", "chart", "holdings"}) {
+	if !reflect.DeepEqual(seen, []Tab{"warnings", "tax", "sources", "transactions", "chart", "holdings"}) {
 		t.Errorf("tab cycle = %v", seen)
 	}
 	if InitialState().Tab != "chart" {

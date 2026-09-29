@@ -39,3 +39,20 @@ func (n *Num) UnmarshalJSON(b []byte) error {
 	}
 	return json.Unmarshal(b, &n.V)
 }
+
+// Save writes v back to a gzipped golden file.
+func Save(t *testing.T, path string, v any) {
+	t.Helper()
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	zw, _ := gzip.NewWriterLevel(f, gzip.BestCompression)
+	if err := json.NewEncoder(zw).Encode(v); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+}

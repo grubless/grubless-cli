@@ -214,31 +214,51 @@ type layer struct {
 
 type painter func(code, text string) string
 
-func newPainter(colour bool) painter {
+func newPainter(colour bool, reset string) painter {
 	return func(code, text string) string {
 		if colour {
-			return code + text + Reset
+			return code + text + reset
 		}
 		return text
 	}
 }
 
+// Palette is the escape codes each part of the chart is drawn in. A TUI theme
+// supplies its own; the zero value is the terminal's own colours, below.
+type Palette struct {
+	Value, Income, Pnl string
+	// Label is the axis text; Baseline the P&L strip's zero line.
+	Label, Baseline string
+	// Reset ends a run — for a theme with its own background, a reset that
+	// puts that background back, rather than the terminal's.
+	Reset string
+}
+
+// TerminalPalette is the terminal's own colours, and what every caller got
+// before themes existed.
+var TerminalPalette = Palette{Value: Cyan, Income: Green, Pnl: Yellow, Label: Dim, Baseline: Dim, Reset: Reset}
+
 // Options for Render. Colour is on for the TUI; `grubless portfolio` turns
-// it off when stdout isn't a terminal.
+// it off when stdout isn't a terminal. A nil Palette is TerminalPalette.
 type Options struct {
 	Width, Height int
 	Colour        bool
+	Palette       *Palette
 }
 
 // Render draws value and income on one zero-based axis, unrealised P&L in a
 // symmetric strip below, and a date axis — exactly Height lines. See
 // src/tui/chart.ts renderPortfolio for why each series sits where it does.
 func Render(points []Point, opts Options) []string {
-	paint := newPainter(opts.Colour)
+	pal := TerminalPalette
+	if opts.Palette != nil {
+		pal = *opts.Palette
+	}
+	paint := newPainter(opts.Colour, pal.Reset)
 	plotCols := max(1, opts.Width-gutter)
 
 	if len(points) == 0 {
-		lines := []string{paint(Dim, "No portfolio history yet.")}
+		lines := []string{paint(pal.Label, "No portfolio history yet.")}
 		for i := 1; i < opts.Height; i++ {
 			lines = append(lines, "")
 		}
@@ -259,14 +279,14 @@ func Render(points []Point, opts Options) []string {
 	dotsWide := plotCols * dotsX
 	sampled := Resample(points, dotsWide)
 
-	lines := mainPlot(sampled, plotCols, plotRows, dotsWide, hasIncome, paint)
+	lines := mainPlot(sampled, plotCols, plotRows, dotsWide, hasIncome, paint, pal)
 	if strip > 0 {
-		lines = append(lines, pnlStrip(sampled, plotCols, strip, dotsWide, paint)...)
+		lines = append(lines, pnlStrip(sampled, plotCols, strip, dotsWide, paint, pal)...)
 	}
-	return append(lines, dateAxis(points, plotCols, paint))
+	return append(lines, dateAxis(points, plotCols, paint, pal))
 }
 
-func mainPlot(points []Point, plotCols, plotRows, dotsWide int, hasIncome bool, paint painter) []string {
+func mainPlot(points []Point, plotCols, plotRows, dotsWide int, hasIncome bool, paint painter, pal Palette) []string {
 	var all []float64
 	for _, p := range points {
 		all = append(all, p.Value)
@@ -298,9 +318,9 @@ func mainPlot(points []Point, plotCols, plotRows, dotsWide int, hasIncome bool, 
 	// value is the first layer merge() consults.
 	var layers []layer
 	if hasIncome {
-		layers = append(layers, layer{draw(series(points, func(p Point) float64 { return p.Income }), toY, plotCols, plotRows, dotsWide), Green})
+		layers = append(layers, layer{draw(series(points, func(p Point) float64 { return p.Income }), toY, plotCols, plotRows, dotsWide), pal.Income})
 	}
-	layers = append(layers, layer{draw(series(points, func(p Point) float64 { return p.Value }), toY, plotCols, plotRows, dotsWide), Cyan})
+	layers = append(layers, layer{draw(series(points, func(p Point) float64 { return p.Value }), toY, plotCols, plotRows, dotsWide), pal.Value})
 	for i, j := 0, len(layers)-1; i < j; i, j = i+1, j-1 {
 		layers[i], layers[j] = layers[j], layers[i]
 	}
@@ -316,12 +336,12 @@ func mainPlot(points []Point, plotCols, plotRows, dotsWide int, hasIncome bool, 
 		case i == plotRows/2:
 			label = CompactMoney(bottom + span/2)
 		}
-		plot[i] = paint(Dim, jsstr.PadStart(label, gutter-1)) + " " + row
+		plot[i] = paint(pal.Label, jsstr.PadStart(label, gutter-1)) + " " + row
 	}
 	return plot
 }
 
-func pnlStrip(points []Point, plotCols, plotRows, dotsWide int, paint painter) []string {
+func pnlStrip(points []Point, plotCols, plotRows, dotsWide int, paint painter, pal Palette) []string {
 	values := series(points, func(p Point) float64 { return p.Pnl })
 	abs := make([]float64, len(values), len(values)+1)
 	for i, v := range values {
@@ -341,8 +361,8 @@ func pnlStrip(points []Point, plotCols, plotRows, dotsWide int, paint painter) [
 		baseline.set(x, zeroDot)
 	}
 	layers := []layer{
-		{draw(values, toY, plotCols, plotRows, dotsWide), Yellow},
-		{baseline, Dim},
+		{draw(values, toY, plotCols, plotRows, dotsWide), pal.Pnl},
+		{baseline, pal.Baseline},
 	}
 
 	plot := merge(layers, plotCols, plotRows, paint)
@@ -354,7 +374,7 @@ func pnlStrip(points []Point, plotCols, plotRows, dotsWide int, paint painter) [
 		case i == plotRows-1:
 			label = CompactMoney(-bound)
 		}
-		plot[i] = paint(Dim, jsstr.PadStart(label, gutter-1)) + " " + row
+		plot[i] = paint(pal.Label, jsstr.PadStart(label, gutter-1)) + " " + row
 	}
 	return plot
 }
@@ -443,14 +463,14 @@ func merge(layers []layer, cols, rows int, paint painter) []string {
 
 // dateAxis puts the first, middle and last dates under the points they
 // describe, or just the span when three won't fit.
-func dateAxis(points []Point, plotCols int, paint painter) string {
+func dateAxis(points []Point, plotCols int, paint painter, pal Palette) string {
 	first := points[0].Date
 	last := points[len(points)-1].Date
 	mid := points[len(points)/2].Date
 
 	if plotCols < jsstr.Len(first)*3+4 {
 		text := first + " → " + last
-		return strings.Repeat(" ", gutter) + paint(Dim, jsstr.Slice(text, 0, plotCols))
+		return strings.Repeat(" ", gutter) + paint(pal.Label, jsstr.Slice(text, 0, plotCols))
 	}
 
 	// Slots are UTF-16 units, as the TS's `line[start + i] = text[i]` is, so
@@ -472,5 +492,5 @@ func dateAxis(points []Point, plotCols int, paint painter) string {
 		place(mid, (plotCols-jsstr.Len(mid))/2)
 	}
 	place(last, plotCols-jsstr.Len(last))
-	return strings.Repeat(" ", gutter) + paint(Dim, string(utf16.Decode(line)))
+	return strings.Repeat(" ", gutter) + paint(pal.Label, string(utf16.Decode(line)))
 }

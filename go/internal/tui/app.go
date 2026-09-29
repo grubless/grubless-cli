@@ -1,9 +1,11 @@
 package tui
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
+	"sort"
 	"strings"
 	"syscall"
 	"time"
@@ -11,7 +13,9 @@ import (
 
 	"github.com/grubless/grubless-cli/go/internal/api"
 	"github.com/grubless/grubless-cli/go/internal/client"
+	"github.com/grubless/grubless-cli/go/internal/config"
 	"github.com/grubless/grubless-cli/go/internal/output"
+	"github.com/grubless/grubless-cli/go/internal/txfmt"
 )
 
 // The event loop: the impure shell around the pure reducer and views. Fetch,
@@ -37,6 +41,9 @@ type app struct {
 	stopped chan struct{}
 	code    int
 	done    bool
+	// themeFromEnv: GRUBLESS_THEME chose the theme, so a switch with `t`
+	// can't outlast the session, and says so.
+	themeFromEnv bool
 }
 
 // Run opens the interface and blocks until the user quits.
@@ -48,7 +55,21 @@ func Run(c *client.Client) (int, error) {
 	}
 
 	a := &app{client: c, term: NewTerminal(), state: InitialState(), events: make(chan func(), 64), stopped: make(chan struct{})}
-	if err := a.term.Open(); err != nil {
+	theme, fromEnv := config.Theme()
+	name, ok := NormaliseTheme(theme)
+	if name == "" {
+		name = DefaultTheme()
+	}
+	if !ok {
+		// Said before the screen is taken over, where it can still be read.
+		source := "the config file"
+		if fromEnv {
+			source = "GRUBLESS_THEME"
+		}
+		output.Note(fmt.Sprintf("warning: unknown theme %q in %s; using %s. Themes: %s.", theme, source, ThemeLabel[name], strings.Join(Themes, ", ")))
+	}
+	a.state.Theme, a.state.TrueColour, a.themeFromEnv = name, TrueColour(), fromEnv
+	if err := a.term.Open(paletteOf(a.state).base); err != nil {
 		return 0, err
 	}
 	// Restore the terminal on every exit path, including a panic — a TUI
@@ -193,6 +214,25 @@ func (a *app) onKey(key Key) {
 		if next.SelectedEntity != nil {
 			a.startSync(*next.SelectedEntity)
 		}
+	case ActTheme:
+		a.term.SetBase(paletteOf(next).base)
+		message := "Theme: " + ThemeLabel[next.Theme]
+		switch err := config.SaveTheme(next.Theme); {
+		case err != nil:
+			message += " (not saved: " + err.Error() + ")"
+		case a.themeFromEnv:
+			message += " — GRUBLESS_THEME will override it next time"
+		}
+		next.Message = msg(message)
+		a.setState(next)
+	case ActApplyFilter:
+		if next.SelectedEntity != nil {
+			a.applyFilter(*next.SelectedEntity, next.TxFilter)
+		}
+	case ActLoadMore:
+		if next.SelectedEntity != nil && next.Data.TxNextCursor != nil {
+			a.loadMoreTransactions(*next.SelectedEntity, *next.Data.TxNextCursor)
+		}
 	}
 }
 
@@ -235,7 +275,7 @@ func (a *app) loadEntityData(entity api.Entity) {
 		apply func()
 		err   error
 	}
-	parts := make(chan part, 8)
+	parts := make(chan part, 9)
 	fetchInto := func(path string, into func([]byte) error) {
 		go func() {
 			raw, err := a.client.GetRaw(path)
@@ -252,6 +292,16 @@ func (a *app) loadEntityData(entity api.Entity) {
 	fetchInto(base+"/warnings/uncategorized-transfers", into(&d.Uncategorized))
 	fetchInto(base+"/activity", into(&d.Activity))
 	fetchInto(base+"/portfolio-history", into(&d.History))
+	fetchInto(base+"/tx-events?"+a.state.TxFilter.Query(txPageSize, ""), func(raw []byte) error {
+		page, err := api.Decode[api.TxPage](raw)
+		if err != nil {
+			return err
+		}
+		d.Transactions, d.TxNextCursor = page.Events, emptyToNil(page.NextCursor)
+		d.TxAssets = txfmt.Assets{}
+		d.TxAssets.Add(page.Assets)
+		return nil
+	})
 	// Settings 404 on an entity without a row, which isn't worth failing the
 	// screen over: the chart falls back to July and nothing else cares.
 	go func() {
@@ -263,7 +313,7 @@ func (a *app) loadEntityData(entity api.Entity) {
 	}()
 
 	go func() {
-		for i := 0; i < 8; i++ {
+		for i := 0; i < 9; i++ {
 			if p := <-parts; p.err != nil {
 				err := p.err
 				a.post(func() { a.fail(err) })
@@ -286,6 +336,100 @@ func into[T any](dst *T) func([]byte) error {
 		*dst = v
 		return err
 	}
+}
+
+// txPageSize is small next to the API's 2000: the tab only needs a
+// screenful to start, and loads the next page before you reach the end.
+const txPageSize = 100
+
+func emptyToNil(p *string) *string {
+	if p == nil || *p == "" {
+		return nil
+	}
+	return p
+}
+
+// loadMoreTransactions appends the page after `cursor`. If the list was
+// reloaded or the entity changed while it was in flight, the page belongs to
+// a list that no longer exists and is dropped.
+func (a *app) loadMoreTransactions(entity api.Entity, cursor string) {
+	filter := a.state.TxFilter
+	go func() {
+		page, err := getJSON[api.TxPage](a.client, "/entities/"+entity.ID+"/tx-events?"+filter.Query(txPageSize, cursor))
+		a.post(func() {
+			next := a.state
+			current := next.Data.TxNextCursor
+			if next.SelectedEntity == nil || next.SelectedEntity.ID != entity.ID || current == nil || *current != cursor {
+				return
+			}
+			next.Data.TxLoadingMore = false
+			if err != nil {
+				a.state = next
+				a.fail(err)
+				return
+			}
+			next.Data.Transactions = append(append([]api.TxEvent(nil), next.Data.Transactions...), page.Events...)
+			assets := txfmt.Assets{}
+			for id, asset := range next.Data.TxAssets {
+				assets[id] = asset
+			}
+			assets.Add(page.Assets)
+			next.Data.TxAssets = assets
+			next.Data.TxNextCursor = emptyToNil(page.NextCursor)
+			a.setState(next)
+		})
+	}()
+}
+
+// applyFilter refetches the transactions from their first page. If the
+// filter or the entity changed again before it answered, the answer is for a
+// question nobody is asking any more, and is dropped.
+func (a *app) applyFilter(entity api.Entity, filter TxFilter) {
+	go func() {
+		page, err := getJSON[api.TxPage](a.client, "/entities/"+entity.ID+"/tx-events?"+filter.Query(txPageSize, ""))
+		a.post(func() {
+			next := a.state
+			if next.SelectedEntity == nil || next.SelectedEntity.ID != entity.ID || next.TxFilter != filter {
+				return
+			}
+			if err != nil {
+				a.fail(filterError(err))
+				return
+			}
+			next.Data.Transactions, next.Data.TxNextCursor = page.Events, emptyToNil(page.NextCursor)
+			assets := txfmt.Assets{}
+			for id, asset := range next.Data.TxAssets {
+				assets[id] = asset
+			}
+			assets.Add(page.Assets)
+			next.Data.TxAssets = assets
+			next.Loading = false
+			a.setState(next)
+		})
+	}()
+}
+
+// filterError makes the API's rejection of a filter readable on one line:
+// the status bar shows only a message's first line, and for a validation
+// error that line is just "GET … rejected:". The field errors follow it.
+func filterError(err error) error {
+	msg := err.Error()
+	_, detail, found := strings.Cut(msg, "rejected:\n")
+	if !found {
+		return err
+	}
+	var body struct {
+		FieldErrors map[string][]string `json:"fieldErrors"`
+	}
+	if json.Unmarshal([]byte(detail), &body) != nil || len(body.FieldErrors) == 0 {
+		return err
+	}
+	var parts []string
+	for field, problems := range body.FieldErrors {
+		parts = append(parts, field+": "+strings.Join(problems, "; "))
+	}
+	sort.Strings(parts)
+	return fmt.Errorf("The API rejected the filter — %s", strings.Join(parts, " · "))
 }
 
 func (a *app) startSync(entity api.Entity) {

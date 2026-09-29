@@ -122,6 +122,81 @@ class Screen:
         return "\n".join("".join(r).rstrip() for r in self.grid).rstrip()
 
 
+def without_go_only(screen):
+    """
+    What the Go build adds on purpose, removed from its screen so everything
+    else is still compared with Node's: the sixth tab (Transactions) in the
+    tab bar, and the help lines for it, for filtering it, and for switching
+    theme.
+    """
+    screen = re.sub(r" +6 Transactions *$", "", screen, flags=re.M)
+    screen = screen.replace("  1..6           jump to a tab", "  1..5           jump to a tab")
+    screen = screen.replace("  ⏎              open the selected transaction (Transactions tab)\n", "")
+    screen = screen.replace("  t              switch theme (Terminal / Cypherpunk)\n", "")
+    screen = screen.replace("  f or /         filter transactions (Transactions tab)\n", "")
+    return screen
+
+
+def go_only_session(api, base_env):
+    """
+    The Transactions tab, which only the Go build has: nothing to compare it
+    with, so each step asserts what the screen must show instead.
+    """
+    steps = [
+        # Cypherpunk by default, on a 256-colour terminal with no choice made.
+        ("load", None, 1.5, ["GRUBLESS█"]),
+        ("open Acme", b"\r", 1.5, []),
+        ("transactions tab", b"6", 0.8, ["6 Transactions", "DATE (UTC)", "2026-09-29 01:30", "1.5 SOL", "340 USDC", "+100.13", "transfer (internal)*", "100+ rows"]),
+        ("second row", b"j", 0.5, []),
+        ("open it", b"\r", 0.8, ["00000001-1d7e-4d0a-9d1b-3c1f2b8e9a01", "Rebalance after the audit", "jupiter", "COST BASIS", "fee", "2 of 100+"]),
+        ("next one", b"j", 0.5, ["00000002-1d7e-4d0a-9d1b-3c1f2b8e9a01", "3 of 100+"]),
+        ("close", b"\x1b", 0.5, ["DATE (UTC)"]),
+        ("open the filter", b"f", 0.5, ["Filter transactions", "Clear all filters", "type to search"]),
+        ("type a category", b"tran", 0.5, ["transfer█"]),
+        ("Enter without completing: refused", b"\r", 0.5, ["did you mean transfer?"]),
+        ("→ completes, then apply", b"\x1b[C\r", 1.0, ["1 filter (f)", "30 rows", "transfer (internal)"]),
+        ("clear all", b"f" + b"\x1b[B" * 8 + b"\r", 1.0, ["100+ rows · f filter"]),
+        ("to the end: pages in the rest", b"\x1b[F", 1.5, ["150 rows"]),
+        ("back", b"q", 0.5, ["select an entity"]),
+        ("switch theme", b"t", 0.5, ["Grubless", "Theme: Terminal"]),
+        ("quit", b"q", 0.5, []),
+    ]
+    failures = 0
+    pid, fd = spawn(BUILDS["go"], base_env)
+    screen = Screen()
+    raw = b""
+    for label, keys, settle, expect in steps:
+        if keys:
+            os.write(fd, keys)
+        out = read_until_idle(fd, idle=settle)
+        raw += out
+        screen.feed(out)
+        text = screen.text()
+        missing = [e for e in expect if e not in text]
+        if missing:
+            failures += 1
+            print(f"✗ go tui: {label}: missing {missing}\n" + "\n".join("      " + l for l in text.split("\n")))
+        else:
+            print(f"✓ go tui: {label}")
+    code = wait_exit(pid)
+    raw += read_until_idle(fd, idle=0.3, limit=2)
+    os.close(fd)
+    restored = b"\x1b[?25h" in raw[-40:] and b"\x1b[?1049l" in raw[-40:]
+    ok = code == 0 and restored
+    print(f"{'✓' if ok else '✗'} go tui: exit {code}, terminal restored: {restored}")
+    # The switch is saved, and the next launch opens in it.
+    config = open(os.path.join(base_env["HOME"], "grubless", "config.json")).read()
+    saved = '"theme": "terminal"' in config
+    pid, fd = spawn(BUILDS["go"], base_env)
+    first = read_until_idle(fd, idle=1.0)
+    reopened = b"Grubless" in first and b"GRUBLESS" not in first
+    os.write(fd, b"q")
+    wait_exit(pid)
+    os.close(fd)
+    print(f"{'✓' if saved and reopened else '✗'} go tui: theme saved {saved}, next launch opens in it {reopened}")
+    return failures + (0 if ok else 1) + (0 if saved and reopened else 1)
+
+
 def main():
     stub = subprocess.Popen(["node", os.path.join(ROOT, "go", "scripts", "parity.mjs"), "--serve"], stdout=subprocess.PIPE, text=True)
     api = stub.stdout.readline().strip()
@@ -168,7 +243,9 @@ def main():
         ("warnings", b"3", 0.5),
         ("tax", b"4", 0.5),
         ("sources", b"5", 0.5),
-        ("tab wraps", b"\t", 0.5),
+        # Not Tab: from Sources it now reaches Transactions in Go and wraps to
+        # Portfolio in the TS, by design. Tab order is unit-tested in Go.
+        ("back to the chart", b"1", 0.5),
         ("help", b"?", 0.5),
         ("dismiss help", b"x", 0.5),
         ("reload", b"r", 1.5),
@@ -185,7 +262,9 @@ def main():
     tails = {}
     for name, argv in BUILDS.items():
         stub.send_signal(signal.SIGUSR2)
-        pid, fd = spawn(argv, base_env)
+        # The Go build defaults to Cypherpunk; the comparison with Node is of
+        # layout and text, so it runs in the theme Node has.
+        pid, fd = spawn(argv, {**base_env, "GRUBLESS_THEME": "terminal"})
         screen = Screen()
         screens[name] = []
         raw = b""
@@ -202,6 +281,7 @@ def main():
         os.close(fd)
 
     for (label, a), (_, b) in zip(screens["node"], screens["go"]):
+        b = without_go_only(b)
         if a == b:
             print(f"✓ tui: {label}")
         else:
@@ -215,6 +295,9 @@ def main():
         ok = exits[name] == 0 and restored
         failures += 0 if ok else 1
         print(f"{'✓' if ok else '✗'} tui ({name}): exit {exits[name]}, terminal restored: {restored}")
+
+    stub.send_signal(signal.SIGUSR2)
+    failures += go_only_session(api, base_env)
 
     stub.terminate()
     print(f"\n{'tty parity: identical' if failures == 0 else f'tty parity: {failures} difference(s)'}")

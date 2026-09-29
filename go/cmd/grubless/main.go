@@ -45,6 +45,8 @@ COMMANDS
   tax-summary                   Per-financial-year tax position
   warnings                      Data-quality issues blocking a clean filing
 
+  transactions                  An entity's transactions, filtered, newest first
+
   report <name>                 Download a report (see REPORTS below)
 
 COMMON OPTIONS
@@ -66,6 +68,16 @@ SYNC / IMPORT OPTIONS
   --full                        Re-fetch entire history, ignoring last sync
   --timeout <minutes>           How long --wait waits (default 35)
 
+TRANSACTIONS OPTIONS
+  --category <a,b,…>            Event types, e.g. transfer,send (the API lists them all on a bad one)
+  --direction <in|out>          Only transactions with a leg moving this way
+  --from <date>, --to <date>    ISO date or timestamp bounds
+  --source <id|label>           One source
+  --asset <id|symbol>           One asset; a symbol must be one the entity holds
+  --search <text>               Free-text search
+  --sort <asc|desc>             Oldest or newest first (default desc)
+  --limit <n|all>               How many to show (default 50)
+
 PORTFOLIO OPTIONS
   --range <key>                 24h, 1w, 1m, 3m, 6m, 1y, fy, all (default all)
 
@@ -78,6 +90,7 @@ REPORTS
 ENVIRONMENT
   GRUBLESS_TOKEN                API token; takes precedence over stored config
   GRUBLESS_API_URL              Default API endpoint
+  GRUBLESS_THEME                Interface theme: cypher (default) or terminal; t switches it
   NO_COLOR                      Disable colour
 
 EXIT CODES
@@ -116,6 +129,14 @@ var options = map[string]args.Option{
 	"api-url":          {Kind: args.String},
 	"json":             {Kind: args.Bool},
 	"fail-on-blocking": {Kind: args.Bool},
+	"category":         {Kind: args.String},
+	"direction":        {Kind: args.String},
+	"from":             {Kind: args.String},
+	"to":               {Kind: args.String},
+	"search":           {Kind: args.String},
+	"asset":            {Kind: args.String},
+	"sort":             {Kind: args.String},
+	"limit":            {Kind: args.String},
 	"help":             {Kind: args.Bool, Short: 'h'},
 	"version":          {Kind: args.Bool, Short: 'v'},
 }
@@ -243,6 +264,23 @@ func run(argv []string) (int, error) {
 
 	case "warnings":
 		return commands.Warnings(c, scope, p.Bools["fail-on-blocking"])
+
+	case "transactions":
+		if sub != "" {
+			return 0, output.Errorf(output.UsageError, "Unexpected argument \"%s\". Filters are flags: see `grubless --help`.", sub)
+		}
+		str := func(name string) string { v, _ := p.Str(name); return v }
+		return commands.Transactions(c, scope, commands.TxFilters{
+			Category:  str("category"),
+			Direction: str("direction"),
+			From:      str("from"),
+			To:        str("to"),
+			Search:    str("search"),
+			Source:    source,
+			Asset:     str("asset"),
+			Sort:      str("sort"),
+			Limit:     str("limit"),
+		})
 
 	case "report":
 		if sub == "" {

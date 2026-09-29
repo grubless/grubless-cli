@@ -48,6 +48,9 @@ func Path() string { return filepath.Join(configDir(), "config.json") }
 type stored struct {
 	APIURL *string `json:"apiUrl,omitempty"`
 	Token  *string `json:"token,omitempty"`
+	// Theme is the TUI's, saved when it's switched with `t`. Go only; the
+	// Node build ignores the field.
+	Theme *string `json:"theme,omitempty"`
 }
 
 func readStored() stored {
@@ -183,8 +186,9 @@ func SaveToken(token, apiURL string) (string, error) {
 	s := readStored()
 	if keychainSet(token) {
 		// Don't leave a copy behind in the file: two places to revoke is one
-		// too many.
-		return "keychain", writeStored(stored{APIURL: &apiURL})
+		// too many. Everything else in the file is kept.
+		s.APIURL, s.Token = &apiURL, nil
+		return "keychain", writeStored(s)
 	}
 	s.APIURL = &apiURL
 	s.Token = &token
@@ -195,7 +199,28 @@ func ClearToken() error {
 	keychainClear()
 	s := readStored()
 	if s.Token != nil && *s.Token != "" {
-		return writeStored(stored{APIURL: s.APIURL})
+		s.Token = nil
+		return writeStored(s)
 	}
 	return nil
+}
+
+// Theme is the TUI theme: GRUBLESS_THEME, then the saved one, then "".
+// fromEnv says which, so the TUI can tell someone why switching with `t`
+// won't outlast the session.
+func Theme() (theme string, fromEnv bool) {
+	if env := strings.TrimSpace(os.Getenv("GRUBLESS_THEME")); env != "" {
+		return env, true
+	}
+	if s := readStored(); s.Theme != nil {
+		return *s.Theme, false
+	}
+	return "", false
+}
+
+// SaveTheme records the TUI theme, keeping everything else in the file.
+func SaveTheme(theme string) error {
+	s := readStored()
+	s.Theme = &theme
+	return writeStored(s)
 }

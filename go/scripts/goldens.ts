@@ -288,7 +288,11 @@ const screens = Array.from({ length: 300 }, () => {
   const height = pick([1, 6, 10, 20, 24, 30, 50]);
   return { state, width, height, lines: render(state as never, width, height) };
 });
-save("internal/tui/testdata/render.json", screens);
+// render.json and reduce.json are no longer written here: since the Go
+// build's Transactions tab, their expected outputs are Go's (see
+// go/internal/tui/golden_test.go). Set GOLDENS_TUI=1 to regenerate them from
+// the TS anyway — which will then fail wherever the builds differ by design.
+if (process.env.GOLDENS_TUI) save("internal/tui/testdata/render.json", screens);
 
 // Key sequences through the reducer: every intermediate state's navigation
 // fields, and every action requested.
@@ -298,7 +302,7 @@ const project = (s: ReturnType<typeof initialState>) => ({
   loading: s.loading, message: s.message, messageKind: s.messageKind, syncing: s.syncing, showHelp: s.showHelp,
   quit: s.quit, range: s.range, holdings: s.data.holdings.length,
 });
-save("internal/tui/testdata/reduce.json", Array.from({ length: 300 }, () => {
+if (process.env.GOLDENS_TUI) save("internal/tui/testdata/reduce.json", Array.from({ length: 300 }, () => {
   // History and holdings values don't affect navigation; dropped to keep the
   // file small. Holdings stay (their count and spam flags drive rowCount).
   const random = randomState();

@@ -73,6 +73,27 @@ const HISTORY = Array.from({ length: 420 }, (_, i) => {
   return { date, value: value.toFixed(6), cumulativeIncome: (i * 12.5).toFixed(2), unrealizedPL: (Math.cos(i / 15) * 5000).toFixed(4) };
 });
 
+const TX_ASSETS = [
+  { id: "asset-sol", chain: "solana", symbol: "SOL" },
+  { id: "asset-usdc", chain: "solana", symbol: "USDC" },
+];
+const TX_EVENTS = Array.from({ length: 150 }, (_, i) => ({
+  id: `${String(i).padStart(8, "0")}-1d7e-4d0a-9d1b-3c1f2b8e9a01`,
+  eventType: i % 5 === 0 ? "transfer" : "trade",
+  isManuallyCategorized: i % 7 === 0,
+  isInternalTransfer: i % 5 === 0,
+  ts: new Date(Date.UTC(2026, 8, 29, 1, 30) - i * 3600000).toISOString(),
+  description: null, notes: i === 1 ? "Rebalance after the audit" : null, detectedProtocol: i % 2 ? "jupiter" : null,
+  taxTreatment: i % 5 === 0 ? "non_taxable" : "capital_gain_loss",
+  legs: [
+    { assetId: "asset-sol", direction: "out", role: "primary", amount: `${i + 1}.5`, value: `${(i + 1) * 250}.125`, currency: "aud", proceeds: `${(i + 1) * 250}.125`, costBasis: `${(i + 1) * 200}`, gainLoss: i % 5 === 0 ? null : `${(i + 1) * 50}.125` },
+    ...(i % 5 === 0 ? [] : [{ assetId: "asset-usdc", direction: "in", role: "primary", amount: `${(i + 1) * 170}`, value: `${(i + 1) * 250}`, currency: "aud", proceeds: null, costBasis: `${(i + 1) * 250}`, gainLoss: null }]),
+    { assetId: "asset-sol", direction: "out", role: "fee", amount: "0.000005", value: "0.001", currency: "aud", proceeds: "0.001", costBasis: "0.0009", gainLoss: "0.0001" },
+  ],
+  source: { id: "src-kraken", label: "Kraken" },
+  tags: i % 3 ? [{ label: "Swap" }] : [],
+}));
+
 // Report bodies: a BOM, quoting, a prose note, surplus fields, an integer-like
 // column — the things a re-framer can get subtly wrong.
 const REPORT_CSV = '﻿Date,Asset,"Proceeds, AUD",2025\r\n2025-07-01,BTC,"1,234.56",x\r\n2025-07-02,"He said ""hi""",7.89,y,surplus\r\n"multi\nline",ETH,0.000000010000000001,z\r\n';
@@ -142,6 +163,30 @@ const server = createServer((req, res) => {
     if (rest.startsWith("warnings/")) return send(res, 200, id === ACME ? WARNINGS[rest.slice(9)] ?? [] : []);
     if (rest === "portfolio-history") return send(res, 200, id === ACME ? HISTORY : []);
     if (rest === "tax-settings") return id === ACME ? send(res, 200, { entityId: id, baseCurrency: "aud", financialYearStartMonth: 7 }) : send(res, 404, { error: "no settings" });
+
+    if (rest === "tx-events") {
+      // Production's shape (probed 2026-09-30): {events, assets, nextCursor},
+      // cursor-paged. Only the Go build calls this; see GO_ONLY below.
+      const limit = Number(url.searchParams.get("limit"));
+      if (!(limit >= 1 && limit <= 2000)) return send(res, 400, { error: { formErrors: [], fieldErrors: { limit: ["Expected number, received nan"] } } });
+      const start = Number((url.searchParams.get("cursor") ?? "cur-0").slice(4));
+      // The filters the API applies, applied the same way here.
+      const q = url.searchParams;
+      const categories = q.get("category")?.split(",");
+      let all = (id === ACME ? TX_EVENTS : []).filter(
+        (e) =>
+          (!categories || categories.includes(e.eventType)) &&
+          (!q.get("direction") || e.legs.some((l) => l.role !== "fee" && l.direction === q.get("direction"))) &&
+          (!q.get("sourceId") || e.source.id === q.get("sourceId")) &&
+          (!q.get("assetId") || e.legs.some((l) => l.assetId === q.get("assetId"))) &&
+          (!q.get("from") || e.ts >= new Date(q.get("from")).toISOString()) &&
+          (!q.get("to") || e.ts <= new Date(q.get("to")).toISOString()) &&
+          (!q.get("q") || JSON.stringify(e).toLowerCase().includes(q.get("q").toLowerCase())),
+      );
+      if (q.get("sort") === "asc") all = [...all].reverse();
+      const page = all.slice(start, start + limit);
+      return send(res, 200, { events: page, assets: TX_ASSETS, nextCursor: start + limit < all.length ? `cur-${start + limit}` : null });
+    }
 
     if (rest === "activity") {
       // Advances per poll: queued, running (two messages), then finished.
@@ -360,7 +405,20 @@ function tree(dir) {
   return out;
 }
 
-/** The only accepted difference: the transport error text, which names the host either way. */
+/**
+ * What the Go build adds on purpose, removed from its output before
+ * comparing — so the rest of that output is still held to the Node build's.
+ * That's the help text's lines for the Go-only features: transactions, and
+ * the TUI's themes.
+ */
+function withoutGoOnly(text) {
+  return text
+    .replace("  transactions                  An entity's transactions, filtered, newest first\n\n", "")
+    .replace(/\nTRANSACTIONS OPTIONS\n(?:  .*\n)+/, "")
+    .replace("  GRUBLESS_THEME                Interface theme: cypher (default) or terminal; t switches it\n", "");
+}
+
+/** The only other accepted difference: the transport error text, which names the host either way. */
 function normalise(buf, dirs) {
   let text = buf.toString("latin1");
   for (const [dir, label] of dirs) text = text.replaceAll(dir, label);
@@ -373,7 +431,7 @@ function compare(label, a, b, dirs) {
   const diffs = [];
   if (a.code !== b.code) diffs.push(`exit: node ${a.code}, go ${b.code}`);
   for (const stream of ["stdout", "stderr"]) {
-    const [x, y] = [normalise(a[stream], dirs.node), normalise(b[stream], dirs.go)];
+    const [x, y] = [normalise(a[stream], dirs.node), withoutGoOnly(normalise(b[stream], dirs.go))];
     if (x !== y) diffs.push(`${stream}:\n    node: ${JSON.stringify(x.slice(0, 2000))}\n    go:   ${JSON.stringify(y.slice(0, 2000))}`);
   }
   if (a.files !== undefined && JSON.stringify(a.files) !== JSON.stringify(b.files)) {

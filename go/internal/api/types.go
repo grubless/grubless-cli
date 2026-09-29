@@ -148,3 +148,51 @@ func Decode[T any](raw []byte) (T, error) {
 func Value(raw []byte) (jsonv.Value, error) {
 	return jsonv.Parse([]byte(jsstr.DecodeUTF8(raw, true)))
 }
+
+// ---------- Transactions (GET /entities/:id/tx-events) ----------
+
+// TxPage is one page of transactions. Assets referenced by the page's legs
+// arrive alongside rather than inline, so a leg's symbol is a lookup.
+type TxPage struct {
+	Events     []TxEvent `json:"events"`
+	Assets     []TxAsset `json:"assets"`
+	NextCursor *string   `json:"nextCursor"`
+}
+
+type TxEvent struct {
+	ID                    string  `json:"id"`
+	EventType             string  `json:"eventType"`
+	Ts                    string  `json:"ts"`
+	IsManuallyCategorized bool    `json:"isManuallyCategorized"`
+	IsInternalTransfer    bool    `json:"isInternalTransfer"`
+	Description           *string `json:"description"`
+	Notes                 *string `json:"notes"`
+	DetectedProtocol      *string `json:"detectedProtocol"`
+	TaxTreatment          *string `json:"taxTreatment"`
+	Legs                  []TxLeg `json:"legs"`
+	Source                *struct {
+		Label string `json:"label"`
+	} `json:"source"`
+	Tags []struct {
+		Label string `json:"label"`
+	} `json:"tags"`
+}
+
+type TxLeg struct {
+	AssetID             string  `json:"assetId"`
+	Direction           string  `json:"direction"`
+	Role                string  `json:"role"`
+	Amount              *string `json:"amount"`
+	Value               *string `json:"value"`
+	Currency            string  `json:"currency"`
+	Proceeds            *string `json:"proceeds"`
+	CostBasis           *string `json:"costBasis"`
+	GainLoss            *string `json:"gainLoss"`
+	CounterpartyAddress *string `json:"counterpartyAddress"`
+}
+
+type TxAsset struct {
+	ID     string  `json:"id"`
+	Symbol string  `json:"symbol"`
+	Chain  *string `json:"chain"`
+}

@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/grubless/grubless-cli/go/internal/jsstr"
 )
@@ -211,3 +212,7 @@ func ShortDate(value *string) string {
 	}
 	return jsstr.ISODay(t)
 }
+
+// ParseTime is `new Date(value)` for an ISO timestamp, for callers that need
+// the instant rather than ShortDate's day.
+func ParseTime(value string) (time.Time, bool) { return jsstr.ParseDate(value) }

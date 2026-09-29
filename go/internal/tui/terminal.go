@@ -107,6 +107,9 @@ func DecodeKeys(chunk string) []Key {
 			keys = append(keys, Key{Name: "c", Ctrl: true})
 		case r == 0x04:
 			keys = append(keys, Key{Name: "d", Ctrl: true})
+		case r == 0x15:
+			// Ctrl-U: clear a field, as in a shell. Go only; the TS drops it.
+			keys = append(keys, Key{Name: "u", Ctrl: true})
 		case r >= ' ':
 			keys = append(keys, Key{Name: string(r)})
 		}
@@ -169,6 +172,10 @@ type Terminal struct {
 	saved         *term.State
 	closed        bool
 	previousFrame []string
+	// base is the theme's background and text colour, applied before each
+	// row is cleared so the clear paints the whole row in it. Empty for the
+	// terminal's own colours.
+	base string
 }
 
 func NewTerminal() *Terminal { return &Terminal{in: os.Stdin, out: os.Stdout} }
@@ -196,8 +203,9 @@ func (t *Terminal) Height() int {
 // x/term's raw mode also turns off output post-processing, which Node's
 // doesn't. Nothing here relies on it: every line is placed with an explicit
 // cursor move, never a newline.
-func (t *Terminal) Open() error {
-	t.out.WriteString(altScreenOn + hideCursor + clearScreen)
+func (t *Terminal) Open(base string) error {
+	t.base = base
+	t.out.WriteString(altScreenOn + hideCursor + base + clearScreen)
 	state, err := term.MakeRaw(int(t.in.Fd()))
 	if err != nil {
 		t.out.WriteString(showCursor + altScreenOff + reset)
@@ -220,6 +228,14 @@ func (t *Terminal) Close() {
 	t.out.WriteString(showCursor + altScreenOff + reset)
 }
 
+// SetBase switches the theme's background: the whole screen is cleared to
+// it and the next frame is painted in full.
+func (t *Terminal) SetBase(base string) {
+	t.base = base
+	t.out.WriteString(reset + base + clearScreen)
+	t.previousFrame = nil
+}
+
 // InvalidateFrame forces a full repaint — after a resize, the previous
 // frame's line positions no longer mean anything.
 func (t *Terminal) InvalidateFrame() { t.previousFrame = nil }
@@ -239,7 +255,7 @@ func (t *Terminal) Render(lines []string) {
 		if row < len(t.previousFrame) && t.previousFrame[row] == line {
 			continue
 		}
-		out.WriteString(moveTo(row+1, 1) + clearLine + line + reset)
+		out.WriteString(moveTo(row+1, 1) + t.base + clearLine + line + reset)
 	}
 	if out.Len() > 0 {
 		t.out.WriteString(out.String())
