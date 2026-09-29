@@ -39,6 +39,8 @@ const ENTITIES = [
   { id: SOC, name: "Société Générale <Test> & Co / 2025", entityType: "trust", role: "preparer", createdAt: "2025-07-02T00:00:00.000Z" },
 ];
 
+const DOTS_ENTITY = { id: "d0d0d0d0-0000-4000-8000-000000000000", name: "..", entityType: "trust", role: "viewer", createdAt: "2025-07-03T00:00:00.000Z" };
+
 const SOURCES = {
   [ACME]: [
     { id: "src-kraken", entityId: ACME, sourceType: "exchange_api", adapterKey: "kraken", label: "Kraken", config: {}, lastSyncedAt: "2026-08-01T10:00:00.000Z", syncStatus: "idle", syncError: null, syncEnabled: true, createdAt: "2025-07-01T00:00:00.000Z", transactionCount: 17342, lastTransactionAt: null },
@@ -150,7 +152,9 @@ const server = createServer((req, res) => {
       return send(res, 404, { error: "no such route" });
     }
 
-    if (path === "/entities") return send(res, 200, empty ? [] : ENTITIES);
+    // "grb_ok_dots" can also see an entity named "..", as someone sharing an
+    // entity could have named it.
+    if (path === "/entities") return send(res, 200, empty ? [] : token === "grb_ok_dots" ? [...ENTITIES, DOTS_ENTITY] : ENTITIES);
     if (path === "/api-tokens") return empty ? send(res, 500, { error: "boom" }) : send(res, 200, [{ id: "t1", name: "laptop", scope: "read", lastUsedAt: null, expiresAt: null, createdAt: "2025-07-01T00:00:00.000Z" }]);
 
     const m = /^\/entities\/([^/]+)\/(.+)$/.exec(path);
@@ -211,6 +215,14 @@ const server = createServer((req, res) => {
       if (name === "fees") return send(res, 200, REPORT_CSV, { "content-type": "text/csv", "content-disposition": "attachment; filename*=UTF-8''fees%E2%82%AC-FY.csv" });
       if (name === "expenses") return send(res, 200, REPORT_CSV, { "content-type": "text/csv", "content-disposition": "attachment; filename*=UTF-8''bad%E2.csv" });
       if (name === "gifts-donations-lost") return send(res, 200, NOTE_CSV, { "content-type": "text/csv" });
+      // Hostile filenames: each tries to climb out of --out.
+      const hostile = {
+        "highest-balance": 'attachment; filename="../../escape.csv"',
+        "end-of-year-holdings": "attachment; filename*=UTF-8''..%2F..%2Fencoded.csv",
+        "beginning-of-year-holdings": 'attachment; filename="..\\..\\windows.csv"',
+        "division-70-trading-stock": 'attachment; filename=".."',
+      };
+      if (hostile[name]) return send(res, 200, REPORT_CSV, { "content-type": "text/csv", "content-disposition": hostile[name] });
       if (name === "other-gains") return send(res, 200, "", { "content-type": "text/csv" });
       return send(res, 200, REPORT_CSV, { "content-type": "text/csv", "content-disposition": `attachment; filename="${name}${year ? "-FY" + year : ""}.csv"` });
     }
@@ -357,6 +369,12 @@ const CASES = [
   ["report bundle --out --all-entities", ["report", "bundle", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
   ["report, percent-encoded filename", ["report", "fees", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
   ["report, malformed filename", ["report", "expenses", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
+  // Path traversal: none of these may write outside --out.
+  ["report, server filename climbs out", ["report", "highest-balance", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
+  ["report, server filename climbs out, encoded", ["report", "end-of-year-holdings", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
+  ["report, server filename climbs out, backslashes", ["report", "beginning-of-year-holdings", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
+  ["report, server filename is ..", ["report", "division-70-trading-stock", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
+  ["report, entity named ..", ["report", "capital-gains", "--all-entities", "--year", "2025", "--out", "{out}"], { GRUBLESS_TOKEN: "grb_ok_dots" }, { out: true }],
   ["report, one entity fails", ["report", "income", "--all-entities", "--year", "2025", "--out", "{out}"], OK, { out: true }],
   ["report, 402 stops the run", ["report", "income", "--all-entities", "--year", "2025", "--out", "{out}"], { GRUBLESS_TOKEN: "grb_402" }, { out: true }],
   ["report, 401 is per-entity", ["report", "income", "--entity", "acme", "--year", "2025"], { GRUBLESS_TOKEN: "grb_401" }],
@@ -453,18 +471,32 @@ for (const [label, args, env, opts = {}] of CASES) {
   for (const [name, bin] of [["node", NODE_CLI], ["go", GO_CLI]]) {
     resetStub();
     const home = mkdtempSync(join(tmpdir(), "parity-home-"));
-    const out = mkdtempSync(join(tmpdir(), "parity-out-"));
+    // --out sits three levels inside a sandbox, and it's the whole sandbox
+    // that's collected: a file that climbs out of --out lands where the
+    // comparison, and the escape check below, can see it.
+    const sandbox = mkdtempSync(join(tmpdir(), "parity-out-"));
+    const out = join(sandbox, "a", "b", "out");
+    mkdirSync(out, { recursive: true });
     const argv = args.map((a) => a.replace("{out}", out));
     results[name] = await run(bin, argv, env, home);
-    if (opts.out) results[name].files = tree(out);
+    if (opts.out) {
+      results[name].files = tree(sandbox);
+      results[name].escaped = Object.keys(results[name].files).filter((f) => !f.startsWith(join("a", "b", "out") + "/"));
+    }
     results[name].posts = JSON.stringify(posts);
     // The stub stamps activity with the moment the sync was queued, which
     // differs between the two runs by however long the first one took.
     dirs[name] = [[out, "<out>"], [home, "<home>"], ...(syncStartedAt ? [[syncStartedAt, "<queued-at>"]] : [])];
     rmSync(home, { recursive: true, force: true });
-    rmSync(out, { recursive: true, force: true });
+    rmSync(sandbox, { recursive: true, force: true });
   }
   compare(label, results.node, results.go, dirs);
+  for (const name of ["node", "go"]) {
+    if (results[name].escaped?.length) {
+      failures++;
+      console.log(`✗ ${label}: ${name} wrote outside --out: ${results[name].escaped.join(", ")}`);
+    }
+  }
   if (process.env.PARITY_SHOW) {
     // What the scenario actually produced, so a match can be checked for
     // being a meaningful one rather than two builds agreeing on nothing.

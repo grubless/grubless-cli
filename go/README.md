@@ -196,8 +196,15 @@ in both:
    it polling forever.
 4. The TUI's Holdings tab doesn't cap long asset symbols, so an unresolved
    token address runs into the next column.
-5. `report --out --all-entities` joins the server's filename unchecked, so a
-   filename containing `../` would write outside `--out`.
+5. ~~`report --out --all-entities` joins the server's filename unchecked, so a
+   filename containing `../` would write outside `--out`.~~ **Fixed in both
+   builds.** An entity named `..` did the same through the folder name, and
+   is fixed too. The server's filename is reduced to its last component
+   (with a warning if it named a path), a name of only dots is refused, and
+   the final path is checked to be inside `--out` before anything is
+   written. `parity.mjs` runs each attack (`../`, URL-encoded, backslashes, a
+   bare `..`, an entity named `..`) against both builds, and fails if either
+   writes anywhere outside `--out`.
 6. A non-numeric value in the portfolio series makes the TS chart loop forever
    in Bresenham. Go draws nothing for that point instead. This is the one
    intentional difference; nothing else could be compared anyway, since the

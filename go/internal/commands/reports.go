@@ -14,6 +14,7 @@ import (
 	"github.com/grubless/grubless-cli/go/internal/client"
 	"github.com/grubless/grubless-cli/go/internal/csv"
 	"github.com/grubless/grubless-cli/go/internal/jsonv"
+	"github.com/grubless/grubless-cli/go/internal/jsstr"
 	"github.com/grubless/grubless-cli/go/internal/output"
 )
 
@@ -173,19 +174,33 @@ func writeOne(c *client.Client, entity api.Entity, name string, o ReportOptions,
 	}
 
 	// A directory per entity under --all-entities, otherwise the literal path.
-	// The server's filename already encodes the FY the report was built for.
-	//
-	// Note: that filename is joined unchecked, as in the TS, so a server that
-	// sent "../../x" would write outside --out. Both builds share this; it's
-	// worth fixing in both.
+	// The server's filename already encodes the FY the report was built for,
+	// so it's used — but only as a name, never as a path: see safeFilename.
 	target := o.Out
 	if multi {
 		dir := filepath.Join(o.Out, safeDirName(entity.Name))
-		filename := dl.Filename
-		if filename == "" {
-			filename = defaultFilename(name, o.Year)
+		file := defaultFilename(name, o.Year)
+		if dl.Filename != "" {
+			safe, ok := safeFilename(dl.Filename)
+			switch {
+			case !ok:
+				output.Note(output.Yellow("!") + " " + entity.Name + ": ignored an unusable filename from the server (" + jsonv.Stringify(dl.Filename) + "); using " + file)
+			default:
+				// A path in it is dropped either way, but a server naming
+				// somewhere outside --out is worth someone knowing about.
+				if safe != dl.Filename {
+					output.Note(output.Yellow("!") + " " + entity.Name + ": the server's filename had a path in it (" + jsonv.Stringify(dl.Filename) + "); saved as " + safe)
+				}
+				file = safe
+			}
 		}
-		target = filepath.Join(dir, filename)
+		target = filepath.Join(dir, file)
+		// The two guards above should make this unreachable. It stays
+		// because a write landing outside --out is invisible until it has
+		// overwritten something.
+		if !isInside(o.Out, target) {
+			return output.Errorf(output.Failure, "Refusing to write %s: it is outside %s.", target, o.Out)
+		}
 		if err := os.MkdirAll(dir, 0o777); err != nil {
 			return errors.New(output.NodeFSError(err, "mkdir", dir))
 		}
@@ -224,12 +239,56 @@ var (
 
 // safeDirName keeps a user-supplied entity name from creating surprise
 // nesting ("Smith & Co (Trust) / 2025") or failing outright.
+//
+// A name of only dots is refused too: "." and ".." survive the character
+// filter, and ".." as a directory is the parent of --out. Entity names are
+// chosen by whoever created the entity, which for a shared one isn't the
+// person running the command.
 func safeDirName(name string) string {
 	s := edgeHyphens.ReplaceAllString(unsafeRun.ReplaceAllString(name, "-"), "")
-	if s == "" {
+	if s == "" || allDots.MatchString(s) {
 		return "entity"
 	}
 	return s
+}
+
+var (
+	allDots      = regexp.MustCompile(`^\.+$`)
+	controlChars = regexp.MustCompile(`[\x00-\x1f\x7f]`)
+)
+
+// safeFilename reduces the server's suggested filename to a bare file name,
+// or reports that nothing usable is left.
+//
+// It arrives in a Content-Disposition header, URL-decoded, and was once
+// joined onto the output directory as-is: "../../.bashrc", or
+// "..%2F..%2F.bashrc" once decoded, or "..\\x" on Windows, wrote outside
+// --out. Only the last path component is kept, and a name that's empty, all
+// dots, or has control characters in it is refused.
+func safeFilename(filename string) (string, bool) {
+	// Everything after the last separator of either kind; empty if the
+	// name ends in one.
+	base := filename[strings.LastIndexAny(filename, `/\`)+1:]
+	if jsstr.Trim(base) == "" || allDots.MatchString(base) || controlChars.MatchString(base) {
+		return "", false
+	}
+	return base, true
+}
+
+// isInside is whether target resolves to somewhere under dir.
+func isInside(dir, target string) bool {
+	absDir, err1 := filepath.Abs(dir)
+	absTarget, err2 := filepath.Abs(target)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	rel, err := filepath.Rel(absDir, absTarget)
+	if err != nil {
+		return false
+	}
+	// ".." itself or ".." then a separator — not a name that happens to
+	// start with two dots, like an entity called "..Holdings".
+	return rel != "." && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
 }
 
 // encodeURIComponent: everything but A–Z a–z 0–9 - _ . ! ~ * ' ( ) escaped
