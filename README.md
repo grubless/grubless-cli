@@ -26,9 +26,6 @@ Or build it with Go 1.26+:
 go install github.com/grubless/grubless-cli/cmd/grubless@latest
 ```
 
-The CLI used to be the npm package `@grubless/cli`. That package is no longer
-updated; this binary replaces it, with the same commands, flags, output and
-exit codes.
 
 Two ways to use it, and they coexist deliberately:
 
@@ -333,8 +330,8 @@ job at 2am.
 
 ### History
 
-The CLI was first written in TypeScript and published to npm as
-`@grubless/cli`. It was ported to Go and held to the TypeScript build byte
+The CLI was first written in TypeScript, as a Node package. It was ported
+to Go and held to the TypeScript build byte
 for byte — output, exit codes, files written — before that build was removed;
 comments that say "the TS" refer to it, and its source is in the git history.
 The scenario recordings and most golden files began as its behaviour. Where
