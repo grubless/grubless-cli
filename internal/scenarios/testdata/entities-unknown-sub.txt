@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Unknown: entities delete. Only `list` exists today.

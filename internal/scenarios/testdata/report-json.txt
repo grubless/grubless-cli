@@ -1,0 +1,40 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "report": "capital-gains",
+  "year": "2025",
+  "columns": [
+    "Date",
+    "Asset",
+    "Proceeds, AUD",
+    "2025"
+  ],
+  "rows": [
+    {
+      "2025": "x",
+      "Date": "2025-07-01",
+      "Asset": "BTC",
+      "Proceeds, AUD": "1,234.56"
+    },
+    {
+      "2025": "y",
+      "Date": "2025-07-02",
+      "Asset": "He said \"hi\"",
+      "Proceeds, AUD": "7.89",
+      "_extra": [
+        "surplus"
+      ]
+    },
+    {
+      "2025": "z",
+      "Date": "multi\nline",
+      "Asset": "ETH",
+      "Proceeds, AUD": "0.000000010000000001"
+    }
+  ]
+}
+--- stderr

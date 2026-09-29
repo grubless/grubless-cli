@@ -1,0 +1,9 @@
+exit 0
+--- stdout
+CATEGORY                      COUNT  
+Disposals with no cost basis      0  
+Uncategorised transfers           0  
+Assets with no price              0  
+Unbalanced transfers              0  
+--- stderr
+✓ No blocking issues.

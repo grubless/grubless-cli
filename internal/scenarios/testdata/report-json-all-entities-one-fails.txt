@@ -1,0 +1,44 @@
+exit 1
+--- stdout
+[
+  {
+    "entity": {
+      "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "name": "Acme Trading Pty Ltd"
+    },
+    "report": "income",
+    "year": "2025",
+    "columns": [
+      "Date",
+      "Asset",
+      "Proceeds, AUD",
+      "2025"
+    ],
+    "rows": [
+      {
+        "2025": "x",
+        "Date": "2025-07-01",
+        "Asset": "BTC",
+        "Proceeds, AUD": "1,234.56"
+      },
+      {
+        "2025": "y",
+        "Date": "2025-07-02",
+        "Asset": "He said \"hi\"",
+        "Proceeds, AUD": "7.89",
+        "_extra": [
+          "surplus"
+        ]
+      },
+      {
+        "2025": "z",
+        "Date": "multi\nline",
+        "Asset": "ETH",
+        "Proceeds, AUD": "0.000000010000000001"
+      }
+    ]
+  }
+]
+--- stderr
+✗ Société Générale <Test> & Co / 2025: GET /entities/0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02/reports/income?year=2025 failed (500): Report generation failed
+1 of 2 entities failed.

@@ -1,0 +1,6 @@
+exit 2
+--- stdout
+--- stderr
+Unknown command "nonsense".
+
+Run `grubless --help`.

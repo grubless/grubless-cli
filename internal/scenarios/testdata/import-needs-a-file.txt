@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Specify the file to import: `grubless import <file.csv>`.

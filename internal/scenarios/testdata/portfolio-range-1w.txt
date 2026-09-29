@@ -1,0 +1,4 @@
+exit 0
+--- stdout
+No portfolio history in the last 1w — try --range all.
+--- stderr

@@ -1,0 +1,6 @@
+exit 1
+--- stdout
+--- stderr
+✗ Acme Trading Pty Ltd: EISDIR: illegal operation on a directory, open '<out>'
+1 of 1 entities failed.
+--- files

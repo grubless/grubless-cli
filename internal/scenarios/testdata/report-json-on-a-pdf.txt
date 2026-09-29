@@ -1,0 +1,5 @@
+exit 2
+--- stdout
+--- stderr
+"ato-mytax" is a rendered PDF, so there are no rows to emit as JSON.
+Write it to a file instead: --out <path>.

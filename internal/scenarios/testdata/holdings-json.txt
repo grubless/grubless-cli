@@ -1,0 +1,87 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "holdings": [
+    {
+      "assetId": "a1",
+      "symbol": "BTC",
+      "chain": "bitcoin",
+      "imageUrl": null,
+      "quantity": "1.234500000000000000",
+      "value": "154321.987654321",
+      "hasMismatch": false,
+      "isSpam": false,
+      "sources": [
+        {
+          "sourceId": "src-kraken",
+          "label": "Kraken",
+          "calculatedQuantity": "1.2345",
+          "reportedQuantity": "1.2345",
+          "mismatch": false
+        }
+      ]
+    },
+    {
+      "assetId": "a2",
+      "symbol": "USDC",
+      "chain": null,
+      "imageUrl": null,
+      "quantity": "2500.5",
+      "value": "2500.50",
+      "hasMismatch": true,
+      "isSpam": false,
+      "sources": [
+        {
+          "label": "hyperliquid"
+        },
+        {
+          "label": "Kraken"
+        }
+      ]
+    },
+    {
+      "assetId": "a3",
+      "symbol": "0xccef6bdd7534f750eb1f494367493b5fd65c905d",
+      "chain": null,
+      "imageUrl": null,
+      "quantity": "2e-9",
+      "value": null,
+      "hasMismatch": false,
+      "isSpam": false,
+      "sources": [
+        {
+          "label": "evm-wallet-a (Ethereum)"
+        },
+        {
+          "label": "evm-wallet-b (Ethereum)"
+        },
+        {
+          "label": "evm-wallet-c (Ethereum)"
+        }
+      ]
+    },
+    {
+      "assetId": "a4",
+      "symbol": "SCAM",
+      "chain": "ethereum",
+      "imageUrl": null,
+      "quantity": "1000000",
+      "value": "0",
+      "hasMismatch": false,
+      "isSpam": true,
+      "sources": []
+    }
+  ]
+}
+{
+  "entity": {
+    "id": "0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02",
+    "name": "Société Générale <Test> & Co / 2025"
+  },
+  "holdings": []
+}
+--- stderr

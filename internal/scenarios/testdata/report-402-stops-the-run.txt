@@ -1,0 +1,6 @@
+exit 5
+--- stdout
+--- stderr
+Reports require a paid plan.
+Upgrade at https://grubless.io/app
+--- files

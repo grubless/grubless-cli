@@ -1,0 +1,5 @@
+exit 3
+--- stdout
+--- stderr
+This token is read-only
+This is a token-scope problem, not a permissions problem — create a write-scoped token.

@@ -1,0 +1,6 @@
+exit 2
+--- stdout
+--- stderr
+Option '--json' does not take an argument
+
+Run `grubless --help`.

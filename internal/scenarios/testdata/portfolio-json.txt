@@ -1,0 +1,11 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "range": "1m",
+  "points": []
+}
+--- stderr

@@ -1,0 +1,9 @@
+exit 0
+"\x1b[1mAcme Trading Pty Ltd (company)\x1b[0m\r\n"
+"\x1b[2mFY       ASSESSABLE INCOME  EXPENSES    NET CGT       TAXABLE                 TAX  CCY\x1b[0m\r\n"
+"2024–25       1,071,559.89  1,200.00  43,459.49  1,016,568.12          254,142.03  AUD\r\n"
+"2025–26               0.00      0.00       0.00          0.00  n/a (pass-through)  AUD\r\n"
+"\x1b[2m  2024–25: -41,434.92 capital loss carried forward\x1b[0m\r\n"
+"\r\n"
+"\x1b[1mSociété Générale <Test> & Co / 2025 (trust)\x1b[0m\r\n"
+"No tax summary yet.\r\n"

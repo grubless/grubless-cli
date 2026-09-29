@@ -1,0 +1,178 @@
+exit 0
+--- stdout
+[
+  {
+    "entity": {
+      "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "name": "Acme Trading Pty Ltd"
+    },
+    "range": "3m",
+    "points": [
+      {
+        "date": "2026-06-30",
+        "value": "174131.468307",
+        "cumulativeIncome": "4925.00",
+        "unrealizedPL": "2115.5316"
+      },
+      {
+        "date": "2026-07-01",
+        "value": "174922.057520",
+        "cumulativeIncome": "4937.50",
+        "unrealizedPL": "1809.0291"
+      },
+      {
+        "date": "2026-07-02",
+        "value": "175673.474750",
+        "cumulativeIncome": "4950.00",
+        "unrealizedPL": "1494.4895"
+      },
+      {
+        "date": "2026-07-03",
+        "value": "176384.216769",
+        "cumulativeIncome": "4962.50",
+        "unrealizedPL": "1173.3102"
+      },
+      {
+        "date": "2026-07-04",
+        "value": "177052.882013",
+        "cumulativeIncome": "4975.00",
+        "unrealizedPL": "846.9181"
+      },
+      {
+        "date": "2026-07-05",
+        "value": "177678.174089",
+        "cumulativeIncome": "4987.50",
+        "unrealizedPL": "516.7633"
+      },
+      {
+        "date": "2026-07-06",
+        "value": "178258.905015",
+        "cumulativeIncome": "5000.00",
+        "unrealizedPL": "184.3127"
+      },
+      {
+        "date": "2026-07-07",
+        "value": "178793.998187",
+        "cumulativeIncome": "5012.50",
+        "unrealizedPL": "-148.9568"
+      },
+      {
+        "date": "2026-07-08",
+        "value": "179282.491073",
+        "cumulativeIncome": "5025.00",
+        "unrealizedPL": "-481.5646"
+      },
+      {
+        "date": "2026-07-09",
+        "value": "179723.537617",
+        "cumulativeIncome": "5037.50",
+        "unrealizedPL": "-812.0328"
+      },
+      {
+        "date": "2026-07-10",
+        "value": "180116.410355",
+        "cumulativeIncome": "5050.00",
+        "unrealizedPL": "-1138.8934"
+      },
+      {
+        "date": "2026-07-11",
+        "value": "180460.502231",
+        "cumulativeIncome": "5062.50",
+        "unrealizedPL": "-1460.6940"
+      },
+      {
+        "date": "2026-07-12",
+        "value": "180755.328117",
+        "cumulativeIncome": "5075.00",
+        "unrealizedPL": "-1776.0051"
+      },
+      {
+        "date": "2026-07-13",
+        "value": "181000.526022",
+        "cumulativeIncome": "5087.50",
+        "unrealizedPL": "-2083.4258"
+      },
+      {
+        "date": "2026-07-14",
+        "value": "181195.858003",
+        "cumulativeIncome": "5100.00",
+        "unrealizedPL": "-2381.5902"
+      },
+      {
+        "date": "2026-07-15",
+        "value": "181341.210752",
+        "cumulativeIncome": "5112.50",
+        "unrealizedPL": "-2669.1737"
+      },
+      {
+        "date": "2026-07-16",
+        "value": "181436.595886",
+        "cumulativeIncome": "5125.00",
+        "unrealizedPL": "-2944.8986"
+      },
+      {
+        "date": "2026-07-17",
+        "value": "181482.149912",
+        "cumulativeIncome": "5137.50",
+        "unrealizedPL": "-3207.5400"
+      },
+      {
+        "date": "2026-07-18",
+        "value": "181478.133892",
+        "cumulativeIncome": "5150.00",
+        "unrealizedPL": "-3455.9308"
+      },
+      {
+        "date": "2026-07-19",
+        "value": "181424.932786",
+        "cumulativeIncome": "5162.50",
+        "unrealizedPL": "-3688.9677"
+      },
+      {
+        "date": "2026-07-20",
+        "value": "181323.054490",
+        "cumulativeIncome": "5175.00",
+        "unrealizedPL": "-3905.6152"
+      },
+      {
+        "date": "2026-07-21",
+        "value": "181173.128569",
+        "cumulativeIncome": "5187.50",
+        "unrealizedPL": "-4104.9108"
+      },
+      {
+        "date": "2026-07-22",
+        "value": "180975.904682",
+        "cumulativeIncome": "5200.00",
+        "unrealizedPL": "-4285.9692"
+      },
+      {
+        "date": "2026-07-23",
+        "value": "180732.250707",
+        "cumulativeIncome": "5212.50",
+        "unrealizedPL": "-4447.9858"
+      },
+      {
+        "date": "2026-07-24",
+        "value": "180443.150574",
+        "cumulativeIncome": "5225.00",
+        "unrealizedPL": "-4590.2410"
+      },
+      {
+        "date": "2026-07-25",
+        "value": "180109.701805",
+        "cumulativeIncome": "5237.50",
+        "unrealizedPL": "-4712.1026"
+      }
+    ]
+  },
+  {
+    "entity": {
+      "id": "0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02",
+      "name": "Société Générale <Test> & Co / 2025"
+    },
+    "range": "3m",
+    "points": []
+  }
+]
+--- stderr

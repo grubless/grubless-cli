@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Specify --source <id> to import into.

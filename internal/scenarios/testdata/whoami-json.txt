@@ -1,0 +1,40 @@
+exit 0
+--- stdout
+{
+  "apiUrl": "https://api.grubless.io",
+  "tokenSource": "env",
+  "entities": [
+    {
+      "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "name": "Acme Trading Pty Ltd",
+      "entityType": "company",
+      "role": "owner",
+      "createdAt": "2025-07-01T00:00:00.000Z",
+      "extraServerField": {
+        "10": "int-like key",
+        "nested": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02",
+      "name": "Société Générale <Test> & Co / 2025",
+      "entityType": "trust",
+      "role": "preparer",
+      "createdAt": "2025-07-02T00:00:00.000Z"
+    }
+  ],
+  "tokens": [
+    {
+      "id": "t1",
+      "name": "laptop",
+      "scope": "read",
+      "lastUsedAt": null,
+      "expiresAt": null,
+      "createdAt": "2025-07-01T00:00:00.000Z"
+    }
+  ]
+}
+--- stderr

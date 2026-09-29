@@ -1,0 +1,137 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "blockingCount": 8,
+  "categories": {
+    "zero-cost": [
+      {
+        "disposalId": "d0",
+        "txEventId": "t0",
+        "eventType": "sell",
+        "ts": "2025-01-15T04:05:06.000Z",
+        "assetSymbol": "BTC",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.05",
+        "proceedsAmount": "0.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d1",
+        "txEventId": "t1",
+        "eventType": "sell",
+        "ts": "2025-02-15T04:05:06.000Z",
+        "assetSymbol": "ETH",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.15",
+        "proceedsAmount": "1000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d2",
+        "txEventId": "t2",
+        "eventType": "sell",
+        "ts": "2025-03-15T04:05:06.000Z",
+        "assetSymbol": "BTC",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.25",
+        "proceedsAmount": "2000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d3",
+        "txEventId": "t3",
+        "eventType": "sell",
+        "ts": "2025-04-15T04:05:06.000Z",
+        "assetSymbol": "ETH",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.35",
+        "proceedsAmount": "3000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d4",
+        "txEventId": "t4",
+        "eventType": "sell",
+        "ts": "2025-05-15T04:05:06.000Z",
+        "assetSymbol": "BTC",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.45",
+        "proceedsAmount": "4000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d5",
+        "txEventId": "t5",
+        "eventType": "sell",
+        "ts": "2025-06-15T04:05:06.000Z",
+        "assetSymbol": "ETH",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.55",
+        "proceedsAmount": "5000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      },
+      {
+        "disposalId": "d6",
+        "txEventId": "t6",
+        "eventType": "sell",
+        "ts": "2025-07-15T04:05:06.000Z",
+        "assetSymbol": "BTC",
+        "assetChain": null,
+        "sourceLabel": "Kraken",
+        "sourceAdapterKey": "kraken",
+        "quantity": "0.65",
+        "proceedsAmount": "6000.555",
+        "gainLossAmount": "1",
+        "currency": "aud"
+      }
+    ],
+    "uncategorized-transfers": [
+      {
+        "txEventId": "u1",
+        "eventType": "transfer",
+        "ts": "2025-03-01T00:00:00.000Z",
+        "direction": "out",
+        "assetSymbol": "USDC",
+        "assetChain": "ethereum",
+        "amount": "1e3"
+      }
+    ],
+    "unpriced-assets": [
+      {
+        "assetId": "x",
+        "symbol": "OBSCURE",
+        "chain": "solana",
+        "contractOrMintAddress": null,
+        "legCount": 3,
+        "incomeLegs": 1,
+        "netQuantity": "5",
+        "firstSeen": "2025-01-01",
+        "lastSeen": "2025-02-01"
+      }
+    ],
+    "unbalanced-transfers": []
+  }
+}
+--- stderr

@@ -1,0 +1,10 @@
+exit 0
+--- stdout
+--- stderr
+→ queued Kraken
+  sync_source
+  Fetching page 1…
+  Fetching page 2…
+✓ Acme Trading Pty Ltd: sync finished
+--- requests
+POST /sources/src-kraken/sync {"full":false,"skipPriceBackfill":false}

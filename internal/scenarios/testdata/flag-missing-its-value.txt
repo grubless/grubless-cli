@@ -1,0 +1,8 @@
+exit 2
+--- stdout
+--- stderr
+Option '--entity' argument is ambiguous.
+Did you forget to specify the option argument for '--entity'?
+To specify an option argument starting with a dash use '--entity=-XYZ'.
+
+Run `grubless --help`.

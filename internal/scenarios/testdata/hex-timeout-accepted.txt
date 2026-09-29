@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+ID          LABEL                    ADAPTER   TXNS  SYNCED      STATUS
+src-kraken  Kraken                   kraken   17342  2026-08-01  idle  
+src-evm     evm-wallet-a (Ethereum)  evm         12  —           error 
+src-csv     Old exchange CSV         csv          0  2024-12-31  off   
+--- stderr
+✗ evm-wallet-a (Ethereum): RPC rate limited

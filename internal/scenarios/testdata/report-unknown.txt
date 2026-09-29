@@ -1,0 +1,5 @@
+exit 2
+--- stdout
+--- stderr
+Unknown report "nope".
+Available: capital-gains, income, fees, expenses, buy-sell, gifts-donations-lost, other-gains, transaction-history, balances-per-source, beginning-of-year-holdings, end-of-year-holdings, highest-balance, division-70-trading-stock, ato-mytax, bundle

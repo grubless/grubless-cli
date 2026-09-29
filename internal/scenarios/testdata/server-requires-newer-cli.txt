@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+ID                                    NAME                                 TYPE     ROLE    
+7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01  Acme Trading Pty Ltd                 company  owner   
+0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02  Société Générale <Test> & Co / 2025  trust    preparer
+--- stderr
+warning: this CLI is 0.1.0, but the server requires 99.0.0 or newer.
+         Update from https://github.com/grubless/grubless-cli/releases

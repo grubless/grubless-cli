@@ -1,0 +1,6 @@
+exit 0
+--- stdout
+FY       ASSESSABLE INCOME  EXPENSES    NET CGT       TAXABLE         TAX  CCY
+2024–25       1,071,559.89  1,200.00  43,459.49  1,016,568.12  254,142.03  AUD
+--- stderr
+  2024–25: -41,434.92 capital loss carried forward

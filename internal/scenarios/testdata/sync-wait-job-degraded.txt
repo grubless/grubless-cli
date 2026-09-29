@@ -1,0 +1,13 @@
+exit 0
+--- stdout
+--- stderr
+→ queued Kraken
+→ queued evm-wallet-a (Ethereum)
+  sync_source
+  Fetching page 1…
+  Fetching page 2…
+! Kraken: Price provider budget exhausted
+✓ Acme Trading Pty Ltd: sync finished
+--- requests
+POST /sources/src-kraken/sync {"full":false,"skipPriceBackfill":true}
+POST /sources/src-evm/sync {"full":false,"skipPriceBackfill":true}

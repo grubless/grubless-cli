@@ -1,0 +1,5 @@
+exit 1
+--- stdout
+--- stderr
+Forbidden
+Your account's role on this entity doesn't allow that.

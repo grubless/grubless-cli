@@ -1,0 +1,5 @@
+exit 2
+--- stdout
+--- stderr
+No entity matching "Nonexistent".
+Run `grubless entities list` to see what this account can reach.

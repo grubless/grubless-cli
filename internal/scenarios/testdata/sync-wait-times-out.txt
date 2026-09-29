@@ -1,0 +1,13 @@
+exit 1
+--- stdout
+--- stderr
+→ queued Kraken
+→ queued evm-wallet-a (Ethereum)
+  sync_source
+  Fetching page 1…
+Timed out after 0 minutes waiting for the job to finish.
+The job is still running server-side — this only stopped watching it.
+Check progress in the web app, or re-run with --timeout <minutes>.
+--- requests
+POST /sources/src-kraken/sync {"full":false,"skipPriceBackfill":true}
+POST /sources/src-evm/sync {"full":false,"skipPriceBackfill":true}

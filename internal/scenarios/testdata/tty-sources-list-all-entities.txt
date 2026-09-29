@@ -1,0 +1,6 @@
+exit 0
+"\x1b[2mID          ENTITY                LABEL                    ADAPTER   TXNS  SYNCED      STATUS        \x1b[0m\r\n"
+"src-kraken  Acme Trading Pty Ltd  Kraken                   kraken   17342  2026-08-01  idle          \r\n"
+"src-evm     Acme Trading Pty Ltd  evm-wallet-a (Ethereum)  evm         12  —           \x1b[31merror\x1b[0m\r\n"
+"src-csv     Acme Trading Pty Ltd  Old exchange CSV         csv          0  2024-12-31  off           \r\n"
+"\x1b[31m✗ evm-wallet-a (Ethereum): RPC rate limited\x1b[0m\r\n"

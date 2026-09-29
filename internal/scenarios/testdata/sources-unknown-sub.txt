@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Unknown: sources frob. Try list or sync.
