@@ -1,7 +1,7 @@
 import { createWriteStream, mkdirSync } from "node:fs";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { join } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import type { Entity } from "../api-types.js";
 import type { ApiClient } from "../client.js";
 import { csvToTable } from "../csv.js";
@@ -187,12 +187,34 @@ async function writeOne(
 
   // A directory when the run covers several entities, otherwise the literal
   // path given. Honour the server's Content-Disposition filename — it already
-  // encodes the FY label the report was actually built for.
-  const target = multi
-    ? join(opts.out, safeDirName(entity.name), filename ?? defaultFilename(name, opts.year))
-    : opts.out;
-
-  if (multi) mkdirSync(join(opts.out, safeDirName(entity.name)), { recursive: true });
+  // encodes the FY label the report was actually built for — but only as a
+  // name, never as a path: see safeFilename.
+  let target = opts.out;
+  if (multi) {
+    const dir = join(opts.out, safeDirName(entity.name));
+    let file = defaultFilename(name, opts.year);
+    if (filename !== null) {
+      const safe = safeFilename(filename);
+      if (!safe) {
+        note(style.yellow("!") + ` ${entity.name}: ignored an unusable filename from the server (${JSON.stringify(filename)}); using ${file}`);
+      } else {
+        // A path in it is dropped either way, but a server naming somewhere
+        // outside --out is worth someone knowing about.
+        if (safe !== filename) {
+          note(style.yellow("!") + ` ${entity.name}: the server's filename had a path in it (${JSON.stringify(filename)}); saved as ${safe}`);
+        }
+        file = safe;
+      }
+    }
+    target = join(dir, file);
+    // The two guards above should make this unreachable. It stays because
+    // the thing it protects against — a write landing outside --out — is
+    // the kind of mistake that is invisible until it overwrites something.
+    if (!isInside(opts.out, target)) {
+      throw new CliError(`Refusing to write ${target}: it is outside ${opts.out}.`, ExitCode.Failure);
+    }
+    mkdirSync(dir, { recursive: true });
+  }
 
   await pipeline(Readable.fromWeb(body as Parameters<typeof Readable.fromWeb>[0]), createWriteStream(target));
   note(style.green("✓") + ` ${entity.name} → ${target}`);
@@ -206,7 +228,40 @@ function defaultFilename(name: string, year?: string): string {
 /**
  * Entity names come from users and land in a filesystem path — "Smith & Co
  * (Trust) / 2025" would otherwise create surprise nesting or fail outright.
+ *
+ * A name of only dots is refused too: "." and ".." survive the character
+ * filter, and ".." as a directory name is the parent of --out. Entity names
+ * are chosen by whoever created the entity, which for a shared one is not
+ * the person running the command.
  */
-function safeDirName(name: string): string {
-  return name.replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "entity";
+export function safeDirName(name: string): string {
+  const safe = name.replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "");
+  return safe === "" || /^\.+$/.test(safe) ? "entity" : safe;
+}
+
+/**
+ * The server's suggested filename, reduced to a bare file name — or null if
+ * nothing usable is left.
+ *
+ * It arrives in a Content-Disposition header, URL-decoded, and without this
+ * it was joined onto the output directory as-is: "../../.bashrc", or
+ * "..%2F..%2F.bashrc" once decoded, or "..\\x" on Windows, wrote outside
+ * --out. The server is ours, but a CLI that writes wherever a response header
+ * says is one proxy, one bug or one compromise away from overwriting a file
+ * its user never named. Only the last path component is kept, and a name
+ * that is empty, all dots or has control characters in it is refused.
+ */
+export function safeFilename(filename: string): string | null {
+  const base = filename.split(/[\\/]/).pop() ?? "";
+  // eslint-disable-next-line no-control-regex
+  if (base.trim() === "" || /^\.+$/.test(base) || /[\u0000-\u001f\u007f]/.test(base)) return null;
+  return base;
+}
+
+/** Whether `target` resolves to somewhere under `dir`. */
+export function isInside(dir: string, target: string): boolean {
+  const rel = relative(resolve(dir), resolve(target));
+  // `..` itself or `..` then a separator — not any name that happens to
+  // start with two dots, like an entity called "..Holdings".
+  return rel !== "" && rel !== ".." && !rel.startsWith(".." + sep) && !isAbsolute(rel);
 }
