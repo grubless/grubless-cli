@@ -8,12 +8,13 @@
 package output
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
-	"unicode/utf8"
+
+	"github.com/grubless/grubless-cli/go/internal/jsonv"
+	"github.com/grubless/grubless-cli/go/internal/jsstr"
+	"golang.org/x/term"
 )
 
 // Exit codes. Documented in README.md § Exit codes; CI pins 2 and 3.
@@ -39,13 +40,17 @@ func Errorf(code int, format string, a ...any) *CliError {
 	return &CliError{Message: fmt.Sprintf(format, a...), ExitCode: code}
 }
 
-// IsTerminal reports whether f is a character device.
-//
-// Good enough on Unix without golang.org/x/term. It is NOT right on Windows,
-// where NUL is also a character device — the full port would use x/term.
-func IsTerminal(f *os.File) bool {
-	info, err := f.Stat()
-	return err == nil && info.Mode()&os.ModeCharDevice != 0
+// IsTerminal is `stream.isTTY`.
+func IsTerminal(f *os.File) bool { return term.IsTerminal(int(f.Fd())) }
+
+// Columns is `process.stdout.columns`: the terminal's width, or ok=false when
+// stdout isn't a terminal (where Node leaves it undefined).
+func Columns() (int, bool) {
+	if !IsTerminal(os.Stdout) {
+		return 0, false
+	}
+	w, _, err := term.GetSize(int(os.Stdout.Fd()))
+	return w, err == nil
 }
 
 // UseColour is rule 2 as a value. `NO_COLOR=` (empty) leaves colour on,
@@ -71,35 +76,9 @@ func Out(line string) { fmt.Fprintln(os.Stdout, line) }
 // Note writes commentary. Always stderr.
 func Note(line string) { fmt.Fprintln(os.Stderr, line) }
 
-// RawJSON pretty-prints a JSON document without decoding it into a struct.
-//
-// This is the Go equivalent of `JSON.stringify(parsed, null, 2)` for data the
-// server sent: decoding into a struct and re-encoding would silently drop any
-// field this client doesn't declare and reorder the rest, so `--json` would
-// stop being the server's own shape. Indenting the raw bytes keeps both.
-func RawJSON(raw []byte) error {
-	var buf bytes.Buffer
-	if err := json.Indent(&buf, raw, "", "  "); err != nil {
-		return err
-	}
-	Out(buf.String())
-	return nil
-}
-
-// JSON encodes a value this client built itself (not a server passthrough).
-func JSON(v any) error {
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	// Go escapes <, > and & as < etc. by default, for embedding in HTML.
-	// JSON.stringify doesn't, and a CLI has no HTML to protect.
-	enc.SetEscapeHTML(false)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(v); err != nil {
-		return err
-	}
-	fmt.Fprint(os.Stdout, buf.String())
-	return nil
-}
+// JSON prints a value exactly as `JSON.stringify(value, null, 2)` would.
+// See internal/jsonv for why that can't be encoding/json.
+func JSON(v jsonv.Value) { Out(jsonv.Stringify(v)) }
 
 // Column is one column of a Table.
 type Column[T any] struct {
@@ -110,10 +89,10 @@ type Column[T any] struct {
 	MaxWidth int
 }
 
-// width counts runes, not bytes — len() on a Go string is bytes, and a single
-// "é" would push a column out by one. (The TS counts UTF-16 units; the two
-// agree everywhere except astral characters like emoji.)
-func width(s string) int { return utf8.RuneCountInString(s) }
+// width is JS `.length` — UTF-16 units, escape codes included, exactly as
+// the TS measures a cell. len() on a Go string would count bytes, and a
+// single "é" would push a column out by one.
+func width(s string) int { return jsstr.Len(s) }
 
 // Table prints plain aligned columns, not box-drawing, so it can be piped into
 // grep or awk.
@@ -147,11 +126,10 @@ func Table[T any](rows []T, columns []Column[T]) {
 	line := func(texts []string) string {
 		parts := make([]string, len(texts))
 		for i, t := range texts {
-			gap := strings.Repeat(" ", max(0, widths[i]-width(t)))
 			if columns[i].AlignRight {
-				parts[i] = gap + t
+				parts[i] = jsstr.PadStart(t, widths[i])
 			} else {
-				parts[i] = t + gap
+				parts[i] = jsstr.PadEnd(t, widths[i])
 			}
 		}
 		return strings.Join(parts, "  ")
@@ -165,16 +143,4 @@ func Table[T any](rows []T, columns []Column[T]) {
 	for _, row := range cells {
 		Out(line(row))
 	}
-}
-
-// Ellipsize hard-truncates plain text so a following column stays aligned.
-func Ellipsize(text string, maxWidth int) string {
-	if maxWidth <= 0 {
-		return ""
-	}
-	runes := []rune(text)
-	if len(runes) <= maxWidth {
-		return text
-	}
-	return string(runes[:maxWidth-1]) + "…"
 }

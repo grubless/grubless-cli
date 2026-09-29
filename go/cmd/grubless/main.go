@@ -1,5 +1,4 @@
-// Command grubless is the Go port spike of the Grubless CLI: auth and
-// `entities list` end to end, everything else reports itself as not ported.
+// Command grubless is the Go port of the Grubless CLI.
 //
 // Dispatch order mirrors src/index.ts exactly, because CI pins it: the
 // credential is resolved BEFORE the command, so an unknown command while
@@ -12,23 +11,18 @@ import (
 	"math"
 	"os"
 	"runtime/debug"
-	"strconv"
 	"strings"
 
 	"github.com/grubless/grubless-cli/go/internal/args"
 	"github.com/grubless/grubless-cli/go/internal/client"
 	"github.com/grubless/grubless-cli/go/internal/commands"
 	"github.com/grubless/grubless-cli/go/internal/config"
+	"github.com/grubless/grubless-cli/go/internal/jsstr"
 	"github.com/grubless/grubless-cli/go/internal/output"
+	"github.com/grubless/grubless-cli/go/internal/tui"
 )
 
-// reports mirrors REPORTS in src/commands/reports.ts.
-var reports = []string{
-	"capital-gains", "income", "fees", "expenses", "buy-sell",
-	"gifts-donations-lost", "other-gains", "transaction-history",
-	"balances-per-source", "beginning-of-year-holdings", "end-of-year-holdings",
-	"highest-balance", "division-70-trading-stock", "ato-mytax",
-}
+var reports = commands.Reports
 
 const usageFormat = `grubless %s — crypto tax for entities
 
@@ -147,14 +141,16 @@ func run(argv []string) (int, error) {
 		return output.UsageError, nil
 	}
 
+	// `values.timeout ? Number(values.timeout) : undefined`, then finite and
+	// positive — JS Number() semantics, so " 5 " and "0x10" parse as they do there.
+	var timeoutMinutes float64
 	if t, ok := p.Str("timeout"); ok && t != "" {
-		// Number() in the TS. ParseFloat is close, but accepts "NaN" and
-		// "Inf", which Number.isFinite would have refused.
-		minutes, err := strconv.ParseFloat(strings.TrimSpace(t), 64)
-		if err != nil || math.IsNaN(minutes) || math.IsInf(minutes, 0) || minutes <= 0 {
+		timeoutMinutes = jsstr.ParseNumber(t)
+		if math.IsNaN(timeoutMinutes) || math.IsInf(timeoutMinutes, 0) || timeoutMinutes <= 0 {
 			return 0, output.Errorf(output.UsageError, "--timeout must be a positive number of minutes, got \"%s\".", t)
 		}
 	}
+	timeoutMs := commands.TimeoutMs(timeoutMinutes)
 
 	var command, sub string
 	if len(p.Positionals) > 0 {
@@ -182,7 +178,15 @@ func run(argv []string) (int, error) {
 	c := client.New(cfg.APIURL, cfg.Token)
 
 	if len(p.Positionals) == 0 {
-		return 0, notPorted("the interactive interface")
+		return tui.Run(c)
+	}
+
+	entity, _ := p.Str("entity")
+	source, _ := p.Str("source")
+	scope := commands.Scope{Entity: entity, AllEntities: p.Bools["all-entities"], JSON: asJSON}
+	var rest []string
+	if len(p.Positionals) > 2 {
+		rest = p.Positionals[2:]
 	}
 
 	switch command {
@@ -198,14 +202,60 @@ func run(argv []string) (int, error) {
 		}
 		return 0, output.Errorf(output.UsageError, "Unknown: entities %s. Only `list` exists today.", sub)
 
-	case "sources", "import", "holdings", "portfolio", "tax-summary", "warnings", "report":
-		return 0, notPorted("`" + command + "`")
+	case "sources":
+		if sub == "" || sub == "list" {
+			return commands.SourcesList(c, scope)
+		}
+		if sub == "sync" {
+			return commands.SourcesSync(c, commands.SyncOptions{
+				Scope:     scope,
+				Source:    source,
+				All:       p.Bools["all"],
+				Full:      p.Bools["full"],
+				Wait:      p.Bools["wait"],
+				TimeoutMs: timeoutMs,
+			})
+		}
+		return 0, output.Errorf(output.UsageError, "Unknown: sources %s. Try list or sync.", sub)
+
+	case "import":
+		if sub == "" {
+			return 0, output.Errorf(output.UsageError, "Specify the file to import: `grubless import <file.csv>`.")
+		}
+		return commands.SourcesImport(c, sub, commands.ImportOptions{
+			Entity:    entity,
+			Source:    source,
+			Wait:      p.Bools["wait"],
+			TimeoutMs: timeoutMs,
+			JSON:      asJSON,
+		})
+
+	case "holdings":
+		return commands.Holdings(c, scope)
+
+	case "portfolio":
+		r, _ := p.Str("range")
+		return commands.Portfolio(c, scope, r)
+
+	case "tax-summary":
+		year, _ := p.Str("year")
+		return commands.TaxSummary(c, scope, year)
+
+	case "warnings":
+		return commands.Warnings(c, scope, p.Bools["fail-on-blocking"])
+
+	case "report":
+		if sub == "" {
+			return 0, output.Errorf(output.UsageError, "Specify a report: %s", strings.Join(append(append([]string{}, reports...), "bundle"), ", "))
+		}
+		if len(rest) > 0 {
+			return 0, output.Errorf(output.UsageError, "Unexpected argument \"%s\". One report at a time.", rest[0])
+		}
+		year, _ := p.Str("year")
+		out, _ := p.Str("out")
+		return commands.Report(c, sub, commands.ReportOptions{Scope: scope, Year: year, Out: out})
 	}
 	return 0, output.Errorf(output.UsageError, "Unknown command \"%s\".\n\nRun `grubless --help`.", command)
-}
-
-func notPorted(what string) error {
-	return output.Errorf(output.Failure, "%s isn't ported to the Go spike yet. Use the Node CLI.", what)
 }
 
 func main() {

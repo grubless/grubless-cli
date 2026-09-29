@@ -123,3 +123,47 @@ jobs:
       # `files` entry pointing at nothing, a `bin` that isn't in the tarball.
       # Cheap here; embarrassing after a real publish.
       - run: npm pack --dry-run
+
+  go:
+    # The Go port. Its own tests need no Node (the golden files carry the TS
+    # behaviour), but the parity checks drive both builds side by side, so
+    # this job builds the Node bundle too.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go/go.mod
+          cache-dependency-path: go/go.sum
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Vet and test
+        working-directory: go
+        run: |
+          test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+          go vet ./...
+          GOOS=windows go vet ./...
+          GOOS=darwin go vet ./...
+          go test ./...
+      - name: Build
+        working-directory: go
+        run: CGO_ENABLED=0 go build -trimpath -o bin/grubless ./cmd/grubless
+      - name: The TS subprocess tests, against the Go binary
+        run: GRUBLESS_CLI_BIN=$PWD/go/bin/grubless pnpm test
+      - name: Parity with the Node build
+        run: |
+          node go/scripts/parity.mjs
+          python3 go/scripts/tty-parity.py
+      - name: Cross-compile every release target
+        working-directory: go
+        run: |
+          for t in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+            CGO_ENABLED=0 GOOS=${t%/*} GOARCH=${t#*/} go build -trimpath -o /dev/null ./cmd/grubless
+          done
