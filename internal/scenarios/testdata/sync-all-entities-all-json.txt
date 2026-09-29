@@ -1,0 +1,39 @@
+exit 0
+--- stdout
+[
+  {
+    "entity": {
+      "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "name": "Acme Trading Pty Ltd"
+    },
+    "queued": [
+      {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      {
+        "id": "src-evm",
+        "label": "evm-wallet-a (Ethereum)"
+      }
+    ],
+    "full": false,
+    "status": "queued"
+  },
+  {
+    "entity": {
+      "id": "0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02",
+      "name": "Société Générale <Test> & Co / 2025"
+    },
+    "queued": [],
+    "full": false,
+    "status": "skipped"
+  }
+]
+--- stderr
+→ queued Kraken
+→ queued evm-wallet-a (Ethereum)
+Société Générale <Test> & Co / 2025: no syncable sources.
+Queued. Pass --wait to block until they finish.
+--- requests
+POST /sources/src-kraken/sync {"full":false,"skipPriceBackfill":true}
+POST /sources/src-evm/sync {"full":false,"skipPriceBackfill":true}

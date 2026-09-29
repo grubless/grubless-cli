@@ -1,9 +1,8 @@
-node_modules/
-dist/
-
-# Written by the e2e suite so a test run never reads or writes the developer's
-# own ~/.config/grubless (see src/test/e2e.test.ts).
-.test-config/
+# Built binaries.
+/grubless
+/grubless.exe
+/bin/
+/dist/
 
 *.log
 .DS_Store

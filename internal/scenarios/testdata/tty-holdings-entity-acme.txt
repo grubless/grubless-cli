@@ -1,0 +1,6 @@
+exit 0
+"\x1b[2mASSET                 HELD IN                        QUANTITY       VALUE                   \x1b[0m\r\n"
+"BTC                   bitcoin                          1.2345  154,321.99                   \r\n"
+"USDC                  hyperliquid, Kraken             2,500.5    2,500.50  \x1b[33mmismatch\x1b[0m\r\n"
+"0xccef6bdd7534f750e…  evm-wallet-a (Ethereum) +2  <0.00000001           —                   \r\n"
+"\x1b[33m! 1 asset(s) disagree with the source's reported balance.\x1b[0m\r\n"

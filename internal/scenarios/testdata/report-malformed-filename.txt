@@ -1,0 +1,7 @@
+exit 1
+--- stdout
+--- stderr
+✗ Acme Trading Pty Ltd: URI malformed
+✗ Société Générale <Test> & Co / 2025: URI malformed
+2 of 2 entities failed.
+--- files

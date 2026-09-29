@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+--timeout must be a positive number of minutes, got "soon".

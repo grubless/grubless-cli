@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Unexpected argument "income". One report at a time.

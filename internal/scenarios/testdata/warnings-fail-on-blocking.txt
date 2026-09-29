@@ -1,0 +1,21 @@
+exit 4
+--- stdout
+CATEGORY                      COUNT          
+Disposals with no cost basis      7  blocking
+Uncategorised transfers           1  blocking
+Assets with no price              1  advisory
+Unbalanced transfers              0          
+
+Disposals with no cost basis — first 5 of 7:
+DATE        ASSET  QUANTITY  PROCEEDS  SOURCE
+2025-01-15  BTC        0.05      0.56  Kraken
+2025-02-15  ETH        0.15  1,000.56  Kraken
+2025-03-15  BTC        0.25  2,000.56  Kraken
+2025-04-15  ETH        0.35  3,000.56  Kraken
+2025-05-15  BTC        0.45  4,000.56  Kraken
+
+Uncategorised transfers — first 1 of 1:
+DATE        DIR  ASSET  AMOUNT
+2025-03-01  out  USDC    1,000
+--- stderr
+! 8 blocking issue(s) — review before filing.

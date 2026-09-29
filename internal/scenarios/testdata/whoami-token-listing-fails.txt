@@ -1,0 +1,9 @@
+exit 0
+--- stdout
+{
+  "apiUrl": "https://api.grubless.io",
+  "tokenSource": "env",
+  "entities": [],
+  "tokens": []
+}
+--- stderr

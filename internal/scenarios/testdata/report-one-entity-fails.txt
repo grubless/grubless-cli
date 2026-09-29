@@ -1,0 +1,8 @@
+exit 1
+--- stdout
+--- stderr
+✓ Acme Trading Pty Ltd → <out>/Acme-Trading-Pty-Ltd/income-FY2025.csv
+✗ Société Générale <Test> & Co / 2025: GET /entities/0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02/reports/income?year=2025 failed (500): Report generation failed
+1 of 2 entities failed.
+--- files
+a/b/out/Acme-Trading-Pty-Ltd/income-FY2025.csv  150 bytes  sha256 14ba7bc2c8767d1ddca6db777dfddabe93e2209f69ef4f2dc4f9398d8d1746e5

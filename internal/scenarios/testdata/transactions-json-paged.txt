@@ -1,0 +1,6211 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "filters": {
+    "category": null,
+    "direction": null,
+    "from": null,
+    "to": null,
+    "search": null,
+    "source": null,
+    "asset": null,
+    "sort": "asc",
+    "limit": 120
+  },
+  "events": [
+    {
+      "id": "00000149-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-22T20:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "150.5",
+          "value": "37500.125",
+          "currency": "aud",
+          "proceeds": "37500.125",
+          "costBasis": "30000",
+          "gainLoss": "7500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "25500",
+          "value": "37500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "37500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000148-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-22T21:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "149.5",
+          "value": "37250.125",
+          "currency": "aud",
+          "proceeds": "37250.125",
+          "costBasis": "29800",
+          "gainLoss": "7450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "25330",
+          "value": "37250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "37250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000147-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-22T22:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "148.5",
+          "value": "37000.125",
+          "currency": "aud",
+          "proceeds": "37000.125",
+          "costBasis": "29600",
+          "gainLoss": "7400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "25160",
+          "value": "37000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "37000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000146-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-22T23:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "147.5",
+          "value": "36750.125",
+          "currency": "aud",
+          "proceeds": "36750.125",
+          "costBasis": "29400",
+          "gainLoss": "7350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "24990",
+          "value": "36750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "36750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000145-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-23T00:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "146.5",
+          "value": "36500.125",
+          "currency": "aud",
+          "proceeds": "36500.125",
+          "costBasis": "29200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000144-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T01:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "145.5",
+          "value": "36250.125",
+          "currency": "aud",
+          "proceeds": "36250.125",
+          "costBasis": "29000",
+          "gainLoss": "7250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "24650",
+          "value": "36250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "36250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000143-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T02:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "144.5",
+          "value": "36000.125",
+          "currency": "aud",
+          "proceeds": "36000.125",
+          "costBasis": "28800",
+          "gainLoss": "7200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "24480",
+          "value": "36000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "36000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000142-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T03:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "143.5",
+          "value": "35750.125",
+          "currency": "aud",
+          "proceeds": "35750.125",
+          "costBasis": "28600",
+          "gainLoss": "7150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "24310",
+          "value": "35750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "35750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000141-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T04:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "142.5",
+          "value": "35500.125",
+          "currency": "aud",
+          "proceeds": "35500.125",
+          "costBasis": "28400",
+          "gainLoss": "7100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "24140",
+          "value": "35500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "35500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000140-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": true,
+      "ts": "2026-09-23T05:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "141.5",
+          "value": "35250.125",
+          "currency": "aud",
+          "proceeds": "35250.125",
+          "costBasis": "28200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000139-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T06:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "140.5",
+          "value": "35000.125",
+          "currency": "aud",
+          "proceeds": "35000.125",
+          "costBasis": "28000",
+          "gainLoss": "7000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "23800",
+          "value": "35000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "35000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000138-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T07:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "139.5",
+          "value": "34750.125",
+          "currency": "aud",
+          "proceeds": "34750.125",
+          "costBasis": "27800",
+          "gainLoss": "6950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "23630",
+          "value": "34750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "34750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000137-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T08:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "138.5",
+          "value": "34500.125",
+          "currency": "aud",
+          "proceeds": "34500.125",
+          "costBasis": "27600",
+          "gainLoss": "6900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "23460",
+          "value": "34500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "34500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000136-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T09:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "137.5",
+          "value": "34250.125",
+          "currency": "aud",
+          "proceeds": "34250.125",
+          "costBasis": "27400",
+          "gainLoss": "6850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "23290",
+          "value": "34250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "34250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000135-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-23T10:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "136.5",
+          "value": "34000.125",
+          "currency": "aud",
+          "proceeds": "34000.125",
+          "costBasis": "27200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000134-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T11:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "135.5",
+          "value": "33750.125",
+          "currency": "aud",
+          "proceeds": "33750.125",
+          "costBasis": "27000",
+          "gainLoss": "6750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "22950",
+          "value": "33750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "33750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000133-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T12:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "134.5",
+          "value": "33500.125",
+          "currency": "aud",
+          "proceeds": "33500.125",
+          "costBasis": "26800",
+          "gainLoss": "6700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "22780",
+          "value": "33500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "33500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000132-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T13:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "133.5",
+          "value": "33250.125",
+          "currency": "aud",
+          "proceeds": "33250.125",
+          "costBasis": "26600",
+          "gainLoss": "6650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "22610",
+          "value": "33250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "33250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000131-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T14:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "132.5",
+          "value": "33000.125",
+          "currency": "aud",
+          "proceeds": "33000.125",
+          "costBasis": "26400",
+          "gainLoss": "6600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "22440",
+          "value": "33000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "33000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000130-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-23T15:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "131.5",
+          "value": "32750.125",
+          "currency": "aud",
+          "proceeds": "32750.125",
+          "costBasis": "26200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000129-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T16:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "130.5",
+          "value": "32500.125",
+          "currency": "aud",
+          "proceeds": "32500.125",
+          "costBasis": "26000",
+          "gainLoss": "6500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "22100",
+          "value": "32500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "32500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000128-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T17:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "129.5",
+          "value": "32250.125",
+          "currency": "aud",
+          "proceeds": "32250.125",
+          "costBasis": "25800",
+          "gainLoss": "6450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "21930",
+          "value": "32250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "32250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000127-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T18:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "128.5",
+          "value": "32000.125",
+          "currency": "aud",
+          "proceeds": "32000.125",
+          "costBasis": "25600",
+          "gainLoss": "6400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "21760",
+          "value": "32000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "32000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000126-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T19:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "127.5",
+          "value": "31750.125",
+          "currency": "aud",
+          "proceeds": "31750.125",
+          "costBasis": "25400",
+          "gainLoss": "6350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "21590",
+          "value": "31750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "31750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000125-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-23T20:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "126.5",
+          "value": "31500.125",
+          "currency": "aud",
+          "proceeds": "31500.125",
+          "costBasis": "25200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000124-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T21:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "125.5",
+          "value": "31250.125",
+          "currency": "aud",
+          "proceeds": "31250.125",
+          "costBasis": "25000",
+          "gainLoss": "6250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "21250",
+          "value": "31250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "31250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000123-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T22:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "124.5",
+          "value": "31000.125",
+          "currency": "aud",
+          "proceeds": "31000.125",
+          "costBasis": "24800",
+          "gainLoss": "6200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "21080",
+          "value": "31000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "31000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000122-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-23T23:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "123.5",
+          "value": "30750.125",
+          "currency": "aud",
+          "proceeds": "30750.125",
+          "costBasis": "24600",
+          "gainLoss": "6150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "20910",
+          "value": "30750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "30750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000121-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T00:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "122.5",
+          "value": "30500.125",
+          "currency": "aud",
+          "proceeds": "30500.125",
+          "costBasis": "24400",
+          "gainLoss": "6100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "20740",
+          "value": "30500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "30500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000120-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-24T01:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "121.5",
+          "value": "30250.125",
+          "currency": "aud",
+          "proceeds": "30250.125",
+          "costBasis": "24200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000119-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T02:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "120.5",
+          "value": "30000.125",
+          "currency": "aud",
+          "proceeds": "30000.125",
+          "costBasis": "24000",
+          "gainLoss": "6000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "20400",
+          "value": "30000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "30000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000118-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T03:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "119.5",
+          "value": "29750.125",
+          "currency": "aud",
+          "proceeds": "29750.125",
+          "costBasis": "23800",
+          "gainLoss": "5950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "20230",
+          "value": "29750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "29750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000117-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T04:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "118.5",
+          "value": "29500.125",
+          "currency": "aud",
+          "proceeds": "29500.125",
+          "costBasis": "23600",
+          "gainLoss": "5900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "20060",
+          "value": "29500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "29500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000116-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T05:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "117.5",
+          "value": "29250.125",
+          "currency": "aud",
+          "proceeds": "29250.125",
+          "costBasis": "23400",
+          "gainLoss": "5850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "19890",
+          "value": "29250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "29250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000115-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-24T06:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "116.5",
+          "value": "29000.125",
+          "currency": "aud",
+          "proceeds": "29000.125",
+          "costBasis": "23200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000114-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T07:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "115.5",
+          "value": "28750.125",
+          "currency": "aud",
+          "proceeds": "28750.125",
+          "costBasis": "23000",
+          "gainLoss": "5750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "19550",
+          "value": "28750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "28750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000113-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T08:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "114.5",
+          "value": "28500.125",
+          "currency": "aud",
+          "proceeds": "28500.125",
+          "costBasis": "22800",
+          "gainLoss": "5700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "19380",
+          "value": "28500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "28500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000112-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T09:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "113.5",
+          "value": "28250.125",
+          "currency": "aud",
+          "proceeds": "28250.125",
+          "costBasis": "22600",
+          "gainLoss": "5650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "19210",
+          "value": "28250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "28250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000111-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T10:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "112.5",
+          "value": "28000.125",
+          "currency": "aud",
+          "proceeds": "28000.125",
+          "costBasis": "22400",
+          "gainLoss": "5600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "19040",
+          "value": "28000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "28000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000110-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-24T11:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "111.5",
+          "value": "27750.125",
+          "currency": "aud",
+          "proceeds": "27750.125",
+          "costBasis": "22200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000109-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T12:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "110.5",
+          "value": "27500.125",
+          "currency": "aud",
+          "proceeds": "27500.125",
+          "costBasis": "22000",
+          "gainLoss": "5500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "18700",
+          "value": "27500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "27500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000108-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T13:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "109.5",
+          "value": "27250.125",
+          "currency": "aud",
+          "proceeds": "27250.125",
+          "costBasis": "21800",
+          "gainLoss": "5450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "18530",
+          "value": "27250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "27250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000107-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T14:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "108.5",
+          "value": "27000.125",
+          "currency": "aud",
+          "proceeds": "27000.125",
+          "costBasis": "21600",
+          "gainLoss": "5400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "18360",
+          "value": "27000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "27000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000106-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T15:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "107.5",
+          "value": "26750.125",
+          "currency": "aud",
+          "proceeds": "26750.125",
+          "costBasis": "21400",
+          "gainLoss": "5350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "18190",
+          "value": "26750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "26750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000105-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": true,
+      "ts": "2026-09-24T16:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "106.5",
+          "value": "26500.125",
+          "currency": "aud",
+          "proceeds": "26500.125",
+          "costBasis": "21200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000104-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T17:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "105.5",
+          "value": "26250.125",
+          "currency": "aud",
+          "proceeds": "26250.125",
+          "costBasis": "21000",
+          "gainLoss": "5250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "17850",
+          "value": "26250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "26250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000103-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T18:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "104.5",
+          "value": "26000.125",
+          "currency": "aud",
+          "proceeds": "26000.125",
+          "costBasis": "20800",
+          "gainLoss": "5200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "17680",
+          "value": "26000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "26000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000102-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T19:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "103.5",
+          "value": "25750.125",
+          "currency": "aud",
+          "proceeds": "25750.125",
+          "costBasis": "20600",
+          "gainLoss": "5150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "17510",
+          "value": "25750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "25750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000101-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T20:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "102.5",
+          "value": "25500.125",
+          "currency": "aud",
+          "proceeds": "25500.125",
+          "costBasis": "20400",
+          "gainLoss": "5100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "17340",
+          "value": "25500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "25500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000100-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-24T21:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "101.5",
+          "value": "25250.125",
+          "currency": "aud",
+          "proceeds": "25250.125",
+          "costBasis": "20200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000099-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T22:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "100.5",
+          "value": "25000.125",
+          "currency": "aud",
+          "proceeds": "25000.125",
+          "costBasis": "20000",
+          "gainLoss": "5000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "17000",
+          "value": "25000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "25000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000098-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-24T23:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "99.5",
+          "value": "24750.125",
+          "currency": "aud",
+          "proceeds": "24750.125",
+          "costBasis": "19800",
+          "gainLoss": "4950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "16830",
+          "value": "24750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "24750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000097-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T00:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "98.5",
+          "value": "24500.125",
+          "currency": "aud",
+          "proceeds": "24500.125",
+          "costBasis": "19600",
+          "gainLoss": "4900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "16660",
+          "value": "24500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "24500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000096-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T01:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "97.5",
+          "value": "24250.125",
+          "currency": "aud",
+          "proceeds": "24250.125",
+          "costBasis": "19400",
+          "gainLoss": "4850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "16490",
+          "value": "24250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "24250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000095-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-25T02:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "96.5",
+          "value": "24000.125",
+          "currency": "aud",
+          "proceeds": "24000.125",
+          "costBasis": "19200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000094-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T03:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "95.5",
+          "value": "23750.125",
+          "currency": "aud",
+          "proceeds": "23750.125",
+          "costBasis": "19000",
+          "gainLoss": "4750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "16150",
+          "value": "23750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "23750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000093-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T04:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "94.5",
+          "value": "23500.125",
+          "currency": "aud",
+          "proceeds": "23500.125",
+          "costBasis": "18800",
+          "gainLoss": "4700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "15980",
+          "value": "23500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "23500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000092-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T05:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "93.5",
+          "value": "23250.125",
+          "currency": "aud",
+          "proceeds": "23250.125",
+          "costBasis": "18600",
+          "gainLoss": "4650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "15810",
+          "value": "23250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "23250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000091-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T06:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "92.5",
+          "value": "23000.125",
+          "currency": "aud",
+          "proceeds": "23000.125",
+          "costBasis": "18400",
+          "gainLoss": "4600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "15640",
+          "value": "23000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "23000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000090-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-25T07:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "91.5",
+          "value": "22750.125",
+          "currency": "aud",
+          "proceeds": "22750.125",
+          "costBasis": "18200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000089-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T08:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "90.5",
+          "value": "22500.125",
+          "currency": "aud",
+          "proceeds": "22500.125",
+          "costBasis": "18000",
+          "gainLoss": "4500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "15300",
+          "value": "22500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "22500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000088-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T09:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "89.5",
+          "value": "22250.125",
+          "currency": "aud",
+          "proceeds": "22250.125",
+          "costBasis": "17800",
+          "gainLoss": "4450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "15130",
+          "value": "22250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "22250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000087-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T10:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "88.5",
+          "value": "22000.125",
+          "currency": "aud",
+          "proceeds": "22000.125",
+          "costBasis": "17600",
+          "gainLoss": "4400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "14960",
+          "value": "22000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "22000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000086-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T11:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "87.5",
+          "value": "21750.125",
+          "currency": "aud",
+          "proceeds": "21750.125",
+          "costBasis": "17400",
+          "gainLoss": "4350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "14790",
+          "value": "21750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "21750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000085-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-25T12:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "86.5",
+          "value": "21500.125",
+          "currency": "aud",
+          "proceeds": "21500.125",
+          "costBasis": "17200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000084-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T13:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "85.5",
+          "value": "21250.125",
+          "currency": "aud",
+          "proceeds": "21250.125",
+          "costBasis": "17000",
+          "gainLoss": "4250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "14450",
+          "value": "21250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "21250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000083-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T14:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "84.5",
+          "value": "21000.125",
+          "currency": "aud",
+          "proceeds": "21000.125",
+          "costBasis": "16800",
+          "gainLoss": "4200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "14280",
+          "value": "21000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "21000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000082-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T15:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "83.5",
+          "value": "20750.125",
+          "currency": "aud",
+          "proceeds": "20750.125",
+          "costBasis": "16600",
+          "gainLoss": "4150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "14110",
+          "value": "20750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "20750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000081-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T16:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "82.5",
+          "value": "20500.125",
+          "currency": "aud",
+          "proceeds": "20500.125",
+          "costBasis": "16400",
+          "gainLoss": "4100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "13940",
+          "value": "20500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "20500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000080-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-25T17:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "81.5",
+          "value": "20250.125",
+          "currency": "aud",
+          "proceeds": "20250.125",
+          "costBasis": "16200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000079-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T18:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "80.5",
+          "value": "20000.125",
+          "currency": "aud",
+          "proceeds": "20000.125",
+          "costBasis": "16000",
+          "gainLoss": "4000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "13600",
+          "value": "20000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "20000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000078-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T19:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "79.5",
+          "value": "19750.125",
+          "currency": "aud",
+          "proceeds": "19750.125",
+          "costBasis": "15800",
+          "gainLoss": "3950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "13430",
+          "value": "19750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "19750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000077-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T20:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "78.5",
+          "value": "19500.125",
+          "currency": "aud",
+          "proceeds": "19500.125",
+          "costBasis": "15600",
+          "gainLoss": "3900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "13260",
+          "value": "19500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "19500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000076-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T21:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "77.5",
+          "value": "19250.125",
+          "currency": "aud",
+          "proceeds": "19250.125",
+          "costBasis": "15400",
+          "gainLoss": "3850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "13090",
+          "value": "19250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "19250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000075-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-25T22:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "76.5",
+          "value": "19000.125",
+          "currency": "aud",
+          "proceeds": "19000.125",
+          "costBasis": "15200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000074-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-25T23:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "75.5",
+          "value": "18750.125",
+          "currency": "aud",
+          "proceeds": "18750.125",
+          "costBasis": "15000",
+          "gainLoss": "3750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "12750",
+          "value": "18750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "18750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000073-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T00:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "74.5",
+          "value": "18500.125",
+          "currency": "aud",
+          "proceeds": "18500.125",
+          "costBasis": "14800",
+          "gainLoss": "3700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "12580",
+          "value": "18500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "18500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000072-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T01:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "73.5",
+          "value": "18250.125",
+          "currency": "aud",
+          "proceeds": "18250.125",
+          "costBasis": "14600",
+          "gainLoss": "3650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "12410",
+          "value": "18250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "18250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000071-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T02:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "72.5",
+          "value": "18000.125",
+          "currency": "aud",
+          "proceeds": "18000.125",
+          "costBasis": "14400",
+          "gainLoss": "3600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "12240",
+          "value": "18000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "18000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000070-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": true,
+      "ts": "2026-09-26T03:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "71.5",
+          "value": "17750.125",
+          "currency": "aud",
+          "proceeds": "17750.125",
+          "costBasis": "14200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000069-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T04:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "70.5",
+          "value": "17500.125",
+          "currency": "aud",
+          "proceeds": "17500.125",
+          "costBasis": "14000",
+          "gainLoss": "3500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "11900",
+          "value": "17500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "17500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000068-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T05:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "69.5",
+          "value": "17250.125",
+          "currency": "aud",
+          "proceeds": "17250.125",
+          "costBasis": "13800",
+          "gainLoss": "3450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "11730",
+          "value": "17250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "17250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000067-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T06:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "68.5",
+          "value": "17000.125",
+          "currency": "aud",
+          "proceeds": "17000.125",
+          "costBasis": "13600",
+          "gainLoss": "3400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "11560",
+          "value": "17000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "17000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000066-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T07:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "67.5",
+          "value": "16750.125",
+          "currency": "aud",
+          "proceeds": "16750.125",
+          "costBasis": "13400",
+          "gainLoss": "3350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "11390",
+          "value": "16750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "16750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000065-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-26T08:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "66.5",
+          "value": "16500.125",
+          "currency": "aud",
+          "proceeds": "16500.125",
+          "costBasis": "13200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000064-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T09:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "65.5",
+          "value": "16250.125",
+          "currency": "aud",
+          "proceeds": "16250.125",
+          "costBasis": "13000",
+          "gainLoss": "3250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "11050",
+          "value": "16250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "16250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000063-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T10:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "64.5",
+          "value": "16000.125",
+          "currency": "aud",
+          "proceeds": "16000.125",
+          "costBasis": "12800",
+          "gainLoss": "3200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "10880",
+          "value": "16000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "16000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000062-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T11:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "63.5",
+          "value": "15750.125",
+          "currency": "aud",
+          "proceeds": "15750.125",
+          "costBasis": "12600",
+          "gainLoss": "3150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "10710",
+          "value": "15750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "15750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000061-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T12:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "62.5",
+          "value": "15500.125",
+          "currency": "aud",
+          "proceeds": "15500.125",
+          "costBasis": "12400",
+          "gainLoss": "3100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "10540",
+          "value": "15500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "15500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000060-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-26T13:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "61.5",
+          "value": "15250.125",
+          "currency": "aud",
+          "proceeds": "15250.125",
+          "costBasis": "12200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000059-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T14:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "60.5",
+          "value": "15000.125",
+          "currency": "aud",
+          "proceeds": "15000.125",
+          "costBasis": "12000",
+          "gainLoss": "3000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "10200",
+          "value": "15000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "15000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000058-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T15:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "59.5",
+          "value": "14750.125",
+          "currency": "aud",
+          "proceeds": "14750.125",
+          "costBasis": "11800",
+          "gainLoss": "2950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "10030",
+          "value": "14750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "14750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000057-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T16:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "58.5",
+          "value": "14500.125",
+          "currency": "aud",
+          "proceeds": "14500.125",
+          "costBasis": "11600",
+          "gainLoss": "2900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "9860",
+          "value": "14500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "14500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000056-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T17:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "57.5",
+          "value": "14250.125",
+          "currency": "aud",
+          "proceeds": "14250.125",
+          "costBasis": "11400",
+          "gainLoss": "2850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "9690",
+          "value": "14250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "14250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000055-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-26T18:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "56.5",
+          "value": "14000.125",
+          "currency": "aud",
+          "proceeds": "14000.125",
+          "costBasis": "11200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000054-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T19:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "55.5",
+          "value": "13750.125",
+          "currency": "aud",
+          "proceeds": "13750.125",
+          "costBasis": "11000",
+          "gainLoss": "2750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "9350",
+          "value": "13750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "13750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000053-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T20:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "54.5",
+          "value": "13500.125",
+          "currency": "aud",
+          "proceeds": "13500.125",
+          "costBasis": "10800",
+          "gainLoss": "2700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "9180",
+          "value": "13500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "13500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000052-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T21:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "53.5",
+          "value": "13250.125",
+          "currency": "aud",
+          "proceeds": "13250.125",
+          "costBasis": "10600",
+          "gainLoss": "2650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "9010",
+          "value": "13250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "13250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000051-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-26T22:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "52.5",
+          "value": "13000.125",
+          "currency": "aud",
+          "proceeds": "13000.125",
+          "costBasis": "10400",
+          "gainLoss": "2600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "8840",
+          "value": "13000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "13000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000050-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-26T23:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "51.5",
+          "value": "12750.125",
+          "currency": "aud",
+          "proceeds": "12750.125",
+          "costBasis": "10200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000049-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T00:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "50.5",
+          "value": "12500.125",
+          "currency": "aud",
+          "proceeds": "12500.125",
+          "costBasis": "10000",
+          "gainLoss": "2500.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "8500",
+          "value": "12500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "12500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000048-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T01:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "49.5",
+          "value": "12250.125",
+          "currency": "aud",
+          "proceeds": "12250.125",
+          "costBasis": "9800",
+          "gainLoss": "2450.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "8330",
+          "value": "12250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "12250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000047-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T02:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "48.5",
+          "value": "12000.125",
+          "currency": "aud",
+          "proceeds": "12000.125",
+          "costBasis": "9600",
+          "gainLoss": "2400.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "8160",
+          "value": "12000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "12000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000046-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T03:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "47.5",
+          "value": "11750.125",
+          "currency": "aud",
+          "proceeds": "11750.125",
+          "costBasis": "9400",
+          "gainLoss": "2350.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "7990",
+          "value": "11750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "11750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000045-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-27T04:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "46.5",
+          "value": "11500.125",
+          "currency": "aud",
+          "proceeds": "11500.125",
+          "costBasis": "9200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000044-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T05:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "45.5",
+          "value": "11250.125",
+          "currency": "aud",
+          "proceeds": "11250.125",
+          "costBasis": "9000",
+          "gainLoss": "2250.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "7650",
+          "value": "11250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "11250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000043-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T06:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "44.5",
+          "value": "11000.125",
+          "currency": "aud",
+          "proceeds": "11000.125",
+          "costBasis": "8800",
+          "gainLoss": "2200.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "7480",
+          "value": "11000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "11000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000042-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T07:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "43.5",
+          "value": "10750.125",
+          "currency": "aud",
+          "proceeds": "10750.125",
+          "costBasis": "8600",
+          "gainLoss": "2150.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "7310",
+          "value": "10750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "10750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000041-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T08:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "42.5",
+          "value": "10500.125",
+          "currency": "aud",
+          "proceeds": "10500.125",
+          "costBasis": "8400",
+          "gainLoss": "2100.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "7140",
+          "value": "10500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "10500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000040-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-27T09:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "41.5",
+          "value": "10250.125",
+          "currency": "aud",
+          "proceeds": "10250.125",
+          "costBasis": "8200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000039-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T10:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "40.5",
+          "value": "10000.125",
+          "currency": "aud",
+          "proceeds": "10000.125",
+          "costBasis": "8000",
+          "gainLoss": "2000.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "6800",
+          "value": "10000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "10000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000038-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T11:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "39.5",
+          "value": "9750.125",
+          "currency": "aud",
+          "proceeds": "9750.125",
+          "costBasis": "7800",
+          "gainLoss": "1950.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "6630",
+          "value": "9750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "9750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000037-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T12:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "38.5",
+          "value": "9500.125",
+          "currency": "aud",
+          "proceeds": "9500.125",
+          "costBasis": "7600",
+          "gainLoss": "1900.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "6460",
+          "value": "9500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "9500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000036-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T13:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "37.5",
+          "value": "9250.125",
+          "currency": "aud",
+          "proceeds": "9250.125",
+          "costBasis": "7400",
+          "gainLoss": "1850.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "6290",
+          "value": "9250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "9250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000035-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": true,
+      "isInternalTransfer": true,
+      "ts": "2026-09-27T14:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "36.5",
+          "value": "9000.125",
+          "currency": "aud",
+          "proceeds": "9000.125",
+          "costBasis": "7200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000034-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T15:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "35.5",
+          "value": "8750.125",
+          "currency": "aud",
+          "proceeds": "8750.125",
+          "costBasis": "7000",
+          "gainLoss": "1750.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "5950",
+          "value": "8750",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "8750",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000033-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T16:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "34.5",
+          "value": "8500.125",
+          "currency": "aud",
+          "proceeds": "8500.125",
+          "costBasis": "6800",
+          "gainLoss": "1700.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "5780",
+          "value": "8500",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "8500",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    },
+    {
+      "id": "00000032-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T17:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "33.5",
+          "value": "8250.125",
+          "currency": "aud",
+          "proceeds": "8250.125",
+          "costBasis": "6600",
+          "gainLoss": "1650.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "5610",
+          "value": "8250",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "8250",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000031-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "trade",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": false,
+      "ts": "2026-09-27T18:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": "jupiter",
+      "taxTreatment": "capital_gain_loss",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "32.5",
+          "value": "8000.125",
+          "currency": "aud",
+          "proceeds": "8000.125",
+          "costBasis": "6400",
+          "gainLoss": "1600.125"
+        },
+        {
+          "assetId": "asset-usdc",
+          "direction": "in",
+          "role": "primary",
+          "amount": "5440",
+          "value": "8000",
+          "currency": "aud",
+          "proceeds": null,
+          "costBasis": "8000",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": [
+        {
+          "label": "Swap"
+        }
+      ]
+    },
+    {
+      "id": "00000030-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+      "eventType": "transfer",
+      "isManuallyCategorized": false,
+      "isInternalTransfer": true,
+      "ts": "2026-09-27T19:30:00.000Z",
+      "description": null,
+      "notes": null,
+      "detectedProtocol": null,
+      "taxTreatment": "non_taxable",
+      "legs": [
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "primary",
+          "amount": "31.5",
+          "value": "7750.125",
+          "currency": "aud",
+          "proceeds": "7750.125",
+          "costBasis": "6200",
+          "gainLoss": null
+        },
+        {
+          "assetId": "asset-sol",
+          "direction": "out",
+          "role": "fee",
+          "amount": "0.000005",
+          "value": "0.001",
+          "currency": "aud",
+          "proceeds": "0.001",
+          "costBasis": "0.0009",
+          "gainLoss": "0.0001"
+        }
+      ],
+      "source": {
+        "id": "src-kraken",
+        "label": "Kraken"
+      },
+      "tags": []
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-sol",
+      "chain": "solana",
+      "symbol": "SOL"
+    },
+    {
+      "id": "asset-usdc",
+      "chain": "solana",
+      "symbol": "USDC"
+    }
+  ],
+  "nextCursor": "cur-120"
+}
+--- stderr

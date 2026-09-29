@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+--all-entities needs somewhere to put the results: --out <dir> to write files, or --json for one document on stdout.

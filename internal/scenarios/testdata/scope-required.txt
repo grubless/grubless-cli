@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Specify --entity <id|name>, or --all-entities.

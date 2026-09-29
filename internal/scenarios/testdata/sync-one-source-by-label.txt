@@ -1,0 +1,7 @@
+exit 0
+--- stdout
+--- stderr
+→ queued Kraken
+Queued. Pass --wait to block until they finish.
+--- requests
+POST /sources/src-kraken/sync {"full":false,"skipPriceBackfill":false}

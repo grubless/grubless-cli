@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+﻿Date,Asset,"Proceeds, AUD",2025
+2025-07-01,BTC,"1,234.56",x
+2025-07-02,"He said ""hi""",7.89,y,surplus
+"multi
+line",ETH,0.000000010000000001,z
+--- stderr

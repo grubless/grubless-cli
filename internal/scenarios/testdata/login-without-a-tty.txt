@@ -1,0 +1,5 @@
+exit 2
+--- stdout
+--- stderr
+No token given and stdin isn't a terminal.
+In a script, pass --token, or set GRUBLESS_TOKEN instead of logging in.

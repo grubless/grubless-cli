@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+No source matching "nope" on Acme Trading Pty Ltd.

@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Specify --source <id>, or --all to sync every source on the entity.

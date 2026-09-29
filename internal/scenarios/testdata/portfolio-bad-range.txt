@@ -1,0 +1,5 @@
+exit 2
+--- stdout
+--- stderr
+Unknown range "2w".
+Available: 24h, 1w, 1m, 3m, 6m, 1y, fy, all

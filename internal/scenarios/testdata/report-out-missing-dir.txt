@@ -1,0 +1,6 @@
+exit 1
+--- stdout
+--- stderr
+✗ Acme Trading Pty Ltd: ENOENT: no such file or directory, open '<out>/nope/cg.csv'
+1 of 1 entities failed.
+--- files

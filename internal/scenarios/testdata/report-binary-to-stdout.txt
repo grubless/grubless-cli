@@ -1,0 +1,4 @@
+exit 0
+--- stdout
+<4096 bytes, sha256 9d5a568930543f9fd05bf39a4236d0c2d5a3e48b77c68ff35d058c321a36d856>
+--- stderr

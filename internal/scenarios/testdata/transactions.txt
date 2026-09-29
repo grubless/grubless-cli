@@ -1,0 +1,11 @@
+exit 0
+--- stdout
+ID        DATE (UTC)        TYPE                      OUT        IN           FEE  GAIN/LOSS  SOURCE  TAGS
+00000000  2026-09-29 01:30  transfer (internal)*  1.5 SOL            0.000005 SOL       0.00  Kraken      
+00000001  2026-09-29 00:30  trade                 2.5 SOL  340 USDC  0.000005 SOL    +100.13  Kraken  Swap
+00000002  2026-09-28 23:30  trade                 3.5 SOL  510 USDC  0.000005 SOL    +150.13  Kraken  Swap
+00000003  2026-09-28 22:30  trade                 4.5 SOL  680 USDC  0.000005 SOL    +200.13  Kraken      
+00000004  2026-09-28 21:30  trade                 5.5 SOL  850 USDC  0.000005 SOL    +250.13  Kraken  Swap
+--- stderr
+* categorised by hand
+Showing the first 5; more match. Raise --limit, or pass --limit all.

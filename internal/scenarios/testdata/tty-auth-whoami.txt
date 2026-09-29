@@ -1,0 +1,7 @@
+exit 0
+"API      <api>\r\n"
+"Token    from env\r\n"
+"\r\n"
+"\x1b[2mENTITY                               TYPE     ROLE      ID                                  \x1b[0m\r\n"
+"Acme Trading Pty Ltd                 company  owner     7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01\r\n"
+"Société Générale <Test> & Co / 2025  trust    preparer  0b6e8a3c-55f1-4c2e-8f7a-9e2d1c4b6a02\r\n"

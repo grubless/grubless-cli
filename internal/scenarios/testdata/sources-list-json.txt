@@ -1,0 +1,55 @@
+exit 0
+--- stdout
+[
+  {
+    "id": "src-kraken",
+    "entityId": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "sourceType": "exchange_api",
+    "adapterKey": "kraken",
+    "label": "Kraken",
+    "config": {},
+    "lastSyncedAt": "2026-08-01T10:00:00.000Z",
+    "syncStatus": "idle",
+    "syncError": null,
+    "syncEnabled": true,
+    "createdAt": "2025-07-01T00:00:00.000Z",
+    "transactionCount": 17342,
+    "lastTransactionAt": null,
+    "entityName": "Acme Trading Pty Ltd"
+  },
+  {
+    "id": "src-evm",
+    "entityId": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "sourceType": "on_chain",
+    "adapterKey": "evm",
+    "label": "evm-wallet-a (Ethereum)",
+    "config": {
+      "address": "0xabc"
+    },
+    "lastSyncedAt": null,
+    "syncStatus": "error",
+    "syncError": "RPC rate limited",
+    "syncEnabled": true,
+    "createdAt": "2025-07-01T00:00:00.000Z",
+    "transactionCount": 12,
+    "lastTransactionAt": null,
+    "entityName": "Acme Trading Pty Ltd"
+  },
+  {
+    "id": "src-csv",
+    "entityId": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "sourceType": "csv_import",
+    "adapterKey": "csv",
+    "label": "Old exchange CSV",
+    "config": {},
+    "lastSyncedAt": "2025-01-01T00:00:00+10:00",
+    "syncStatus": "idle",
+    "syncError": null,
+    "syncEnabled": false,
+    "createdAt": "2025-07-01T00:00:00.000Z",
+    "transactionCount": 0,
+    "lastTransactionAt": null,
+    "entityName": "Acme Trading Pty Ltd"
+  }
+]
+--- stderr

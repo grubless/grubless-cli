@@ -1,0 +1,35 @@
+exit 0
+--- stdout
+ID        DATE (UTC)        TYPE                        OUT  IN           FEE  GAIN/LOSS  SOURCE  TAGS
+00000000  2026-09-29 01:30  transfer (internal)*    1.5 SOL      0.000005 SOL       0.00  Kraken      
+00000005  2026-09-28 20:30  transfer (internal)     6.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000010  2026-09-28 15:30  transfer (internal)    11.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000015  2026-09-28 10:30  transfer (internal)    16.5 SOL      0.000005 SOL       0.00  Kraken      
+00000020  2026-09-28 05:30  transfer (internal)    21.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000025  2026-09-28 00:30  transfer (internal)    26.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000030  2026-09-27 19:30  transfer (internal)    31.5 SOL      0.000005 SOL       0.00  Kraken      
+00000035  2026-09-27 14:30  transfer (internal)*   36.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000040  2026-09-27 09:30  transfer (internal)    41.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000045  2026-09-27 04:30  transfer (internal)    46.5 SOL      0.000005 SOL       0.00  Kraken      
+00000050  2026-09-26 23:30  transfer (internal)    51.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000055  2026-09-26 18:30  transfer (internal)    56.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000060  2026-09-26 13:30  transfer (internal)    61.5 SOL      0.000005 SOL       0.00  Kraken      
+00000065  2026-09-26 08:30  transfer (internal)    66.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000070  2026-09-26 03:30  transfer (internal)*   71.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000075  2026-09-25 22:30  transfer (internal)    76.5 SOL      0.000005 SOL       0.00  Kraken      
+00000080  2026-09-25 17:30  transfer (internal)    81.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000085  2026-09-25 12:30  transfer (internal)    86.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000090  2026-09-25 07:30  transfer (internal)    91.5 SOL      0.000005 SOL       0.00  Kraken      
+00000095  2026-09-25 02:30  transfer (internal)    96.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000100  2026-09-24 21:30  transfer (internal)   101.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000105  2026-09-24 16:30  transfer (internal)*  106.5 SOL      0.000005 SOL       0.00  Kraken      
+00000110  2026-09-24 11:30  transfer (internal)   111.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000115  2026-09-24 06:30  transfer (internal)   116.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000120  2026-09-24 01:30  transfer (internal)   121.5 SOL      0.000005 SOL       0.00  Kraken      
+00000125  2026-09-23 20:30  transfer (internal)   126.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000130  2026-09-23 15:30  transfer (internal)   131.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000135  2026-09-23 10:30  transfer (internal)   136.5 SOL      0.000005 SOL       0.00  Kraken      
+00000140  2026-09-23 05:30  transfer (internal)*  141.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+00000145  2026-09-23 00:30  transfer (internal)   146.5 SOL      0.000005 SOL       0.00  Kraken  Swap
+--- stderr
+* categorised by hand

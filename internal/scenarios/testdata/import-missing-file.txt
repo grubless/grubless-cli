@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+Could not read /nonexistent/x.csv: ENOENT: no such file or directory, open '/nonexistent/x.csv'

@@ -1,18 +1,22 @@
-# `@grubless/cli`
+# grubless
 
 Command-line client for [Grubless](https://grubless.io) — crypto tax for
 Australian and US entities.
 
-```bash
-npm install -g @grubless/cli
-```
+A single static binary for Linux, macOS and Windows (x64 and arm64), with
+nothing else to install. Download it from the
+[releases page](https://github.com/grubless/grubless-cli/releases), or build
+it with Go 1.26+:
 
-Requires Node 20+. Zero runtime dependencies.
+```bash
+go install github.com/grubless/grubless-cli/cmd/grubless@latest
+```
 
 Two ways to use it, and they coexist deliberately:
 
 - **`grubless`** with no arguments opens an interactive terminal interface —
-  browse entities, check holdings and warnings, watch a sync run live.
+  browse entities, check holdings, warnings and transactions, watch a sync
+  run live.
 - **`grubless <command>`** is scriptable — pipeable output, real exit codes,
   built for CI and bulk work. A TUI can't be piped, so it doesn't replace this.
 
@@ -24,22 +28,37 @@ Two ways to use it, and they coexist deliberately:
 grubless
 ```
 
-Pick an entity, then move between **Holdings**, **Warnings**, **Tax** and
-**Sources**. Press `s` to sync every enabled source and watch the worker's own
-progress messages update in place — the one thing the terminal genuinely does
-better than a script.
+Pick an entity, then move between **Overview**, **Holdings**, **Warnings**,
+**Tax**, **Sources** and **Transactions**. It's laid out like the web app, in
+cards: the Overview has the portfolio chart, the activity breakdown by
+category, and headline figures for sources, transactions, last sync and price
+coverage.
 
 | | |
 |---|---|
 | `↑ ↓` / `k j` | move |
 | `PgUp` `PgDn`, `Home` `End` | page / jump |
-| `⏎` | open the selected entity |
-| `↹` / `← →` / `h l`, or `1`–`4` | switch tab |
+| `⏎` | open the selected entity, or the selected transaction |
+| `↹` / `← →` / `h l`, or `1`–`6` | switch tab |
+| `[` `]` | narrow / widen the chart's time range |
+| `f` or `/` | filter transactions (Transactions tab) |
 | `r` | reload |
-| `s` | sync every enabled source |
+| `s` | sync every enabled source, and watch it |
+| `t` | switch theme |
 | `?` | help |
 | `q` / `Esc` | back to entities, or quit from there |
 | `Ctrl-C` | quit immediately |
+
+**Transactions** loads a page at a time as you scroll. **⏎** opens one with
+every leg's exact value, proceeds, cost basis and gain/loss. **f** filters by
+category (with suggestions as you type), direction, dates, source, asset and
+text.
+
+**Themes.** The default is **Cypherpunk**, the web app's theme, with its
+colours exactly. It falls back to **Terminal**, your terminal's own colours,
+when `NO_COLOR` is set or the terminal has fewer than 256 colours. `t`
+switches and remembers the choice; `GRUBLESS_THEME=cypher|terminal`
+overrides it.
 
 ---
 
@@ -58,7 +77,7 @@ own.
 ## Gate a filing in CI
 
 ```bash
-grubless warnings --entity "Acme Trading" --fail-on-blocking
+grubless warnings --entity "Node Integration" --fail-on-blocking
 ```
 
 Exits **4** when there are unresolved issues that would make the figures
@@ -77,8 +96,9 @@ Create a token at **Settings → API tokens** in the web app, then:
 grubless auth login
 ```
 
-The token is stored in your system keychain where one is available, and in
-`~/.config/grubless/config.json` (mode `0600`) otherwise.
+The token is stored in your system keychain where one is available (macOS
+Keychain, or libsecret on Linux), and in `~/.config/grubless/config.json`
+(mode `0600`) otherwise.
 
 In CI, skip the login and set the environment variable — it takes precedence
 over anything stored locally:
@@ -106,9 +126,10 @@ grubless sources sync       --entity <id|name> (--source <id> | --all) [--full] 
 grubless import <file.csv>  --entity <id|name> --source <id> [--wait]
 
 grubless holdings           --entity <id|name>
-grubless portfolio          --entity <id|name> [--range 24h|7d|1m|3m|1y|fy|all]
+grubless portfolio          --entity <id|name> [--range 24h|1w|1m|3m|6m|1y|fy|all]
 grubless tax-summary        --entity <id|name> [--year 2025]
 grubless warnings           --entity <id|name> [--fail-on-blocking]
+grubless transactions       --entity <id|name> [filters] [--limit n|all]
 
 grubless report <name>      --entity <id|name> --year 2025 [--out <path>]
 grubless report <name>      --all-entities --year 2025 --out <dir>
@@ -120,6 +141,8 @@ client's entity would produce a confident, correct-looking, completely wrong
 report.
 
 Add `--all-entities` to most commands to run across everything you can reach.
+With `--json`, `--all-entities` is always an array and `--entity` always one
+object, however many entities the account holds.
 
 ### Reports
 
@@ -138,6 +161,26 @@ Without `--out`, the CSV goes to stdout:
 grubless report capital-gains --entity acme --year 2025 > cg.csv
 grubless holdings --entity acme --json | jq '.[] | select(.hasMismatch)'
 ```
+
+With `--all-entities --out <dir>`, each file is named as the server suggests,
+inside a folder per entity — and never outside `<dir>`: a path in a
+server-sent filename is dropped, with a warning.
+
+### Transactions
+
+```bash
+grubless transactions --entity acme --category transfer,send --direction out
+grubless transactions --entity acme --asset SOL --from 2025-07-01 --to 2026-06-30
+grubless transactions --entity acme --limit all --json > txs.json
+```
+
+Filters: `--category` (comma-separated event types; a bad one gets the API's
+list of valid ones back), `--direction in|out`, `--from`/`--to`, `--source`
+(id or label), `--asset` (id, or a symbol the entity holds — a symbol held on
+several chains is refused rather than guessed), `--search`, `--sort asc|desc`.
+`--limit` defaults to 50; `all` pages through everything. `--json` gives the
+events and assets as the server sent them, the filters that produced them,
+and a `nextCursor` when more remain.
 
 ### Portfolio
 
@@ -190,6 +233,7 @@ broke".
 |---|---|
 | `GRUBLESS_TOKEN` | API token; wins over stored config |
 | `GRUBLESS_API_URL` | API endpoint |
+| `GRUBLESS_THEME` | Interface theme: `cypher` (default) or `terminal` |
 | `NO_COLOR` | Disable colour |
 
 ---
@@ -197,57 +241,56 @@ broke".
 ## Development
 
 ```bash
-pnpm install
-pnpm build      # typecheck, bundle, then verify the bundle
-pnpm test
-pnpm dev -- entities list    # run from source, no build
+go test ./...              # everything, including the scenario and TUI tests
+go test -short ./...       # without the --wait scenarios and the TUI session
+go build ./cmd/grubless
 ```
 
 ### What this repo is
 
 A thin HTTP client, and nothing more. Every figure it prints arrives from the
-Grubless API as a finished value — there is no tax logic here, and there is not
-meant to be. The server that computes those figures is not open source; this is
-the client you talk to it with.
+Grubless API as a finished value — there is no tax logic here, and there is
+not meant to be. The server that computes those figures is not open source;
+this is the client you talk to it with. `internal/guard` enforces that on
+every test run: it fails if any of the tax engine's symbols appear in the
+source.
 
-That boundary is enforced rather than trusted: `scripts/verify-bundle.mjs`
-greps the built output for engine symbols on every build and fails if any
-appear.
+### Dependencies
 
-### Zero runtime dependencies
-
-`dependencies` in `package.json` is empty and is meant to stay that way. This
-binary holds a token that can read a firm's entire client list, so every
-package it installs is another machine that could reach that token. Node 20
-provides `fetch`, `parseArgs`, and everything else this needs.
-
-A pull request that adds a runtime dependency needs to argue that case. One
-that adds a dev dependency doesn't — nothing in `devDependencies` reaches the
-published artifact.
+The Go standard library, plus `golang.org/x/term` and `golang.org/x/sys` from
+the Go team (raw mode and the window size, for the TUI). This binary holds a
+token that can read a firm's entire client list, so every module it links is
+another party that could reach that token. `internal/guard` fails if `go.mod`
+requires anything else. A pull request that adds a dependency needs to argue
+that case, and add it there.
 
 ### Tests
 
-`pnpm test` runs 142 tests that need nothing but Node — argument parsing,
-formatting, CSV, the chart renderer, and the whole interactive interface,
-which is split into pure state and pure views precisely so it can be tested
-without a terminal.
+- **`internal/scenarios`** runs the built binary against a stub API across
+  ~125 scenarios and compares everything observable — stdout, stderr, exit
+  code, the requests sent, the config file, every file `--out` writes — with
+  recordings in `testdata/`. Several scenarios try to write outside `--out`
+  and fail the test outright if one succeeds. On Linux it also records colour
+  output on a pseudo-terminal, and drives the TUI key by key. After an
+  intended change, `go test ./internal/scenarios -update`, then read the
+  diff before committing it.
+- **Golden files** in several packages hold exact expected outputs for the
+  formatters, the CSV reader, the chart, key decoding and TUI rendering over
+  thousands of inputs. See `internal/golden`.
+- **`internal/e2e`** drives the built binary against a real Grubless API,
+  set up through public routes only. It's skipped unless pointed at one:
 
-A further 35 drive the **built binary** as a subprocess against a real Grubless
-API. They're skipped, loudly, unless you point them at one:
+  ```bash
+  GRUBLESS_E2E_API_URL=http://localhost:3000 go test ./internal/e2e -v
+  ```
 
-```bash
-pnpm build
-GRUBLESS_E2E_API_URL=http://localhost:3000 pnpm test
-```
-
-They set themselves up entirely through public routes — register, create an
-entity, mint tokens — so any reachable deployment works. They leave a
-throwaway account and one entity behind, because there's no account-deletion
-route to clean up with. Point them at a stack you don't mind that happening to.
+  It leaves a throwaway account and one entity behind — there's no
+  account-deletion route to clean up with. Point it at a stack you don't
+  mind that happening to.
 
 ### Wire types
 
-`src/api-types.ts` is this client's *declared* view of the API's shapes, kept
+`internal/api` is this client's *declared* view of the API's shapes, kept
 deliberately as a copy rather than imported from the server. A CLI is
 separately versioned from the deployment it talks to, so compiling against the
 server's own declarations would only prove agreement with a server you aren't
@@ -255,6 +298,28 @@ talking to. What catches real drift is the e2e run above; what tells a user
 about it is the `x-grubless-min-cli-version` handshake, which warns on stderr
 without failing the command — a raised floor must not break someone's nightly
 job at 2am.
+
+### History
+
+The CLI was first written in TypeScript and published to npm as
+`@grubless/cli`. It was ported to Go and held to the TypeScript build byte
+for byte — output, exit codes, files written — before that build was removed;
+comments that say "the TS" refer to it, and its source is in the git history.
+The scenario recordings and most golden files began as its behaviour. Where
+the port had to work around a difference between Go and Node (JSON key order
+and escaping, UTF-16 string widths, `toFixed` rounding, BOM handling, date
+parsing, Node's file-error wording), the code says so where it happens.
+
+Known issues carried over from the TypeScript build:
+
+- `auth whoami --api-url X` queries X but reports the configured URL.
+- **End** on a TUI tab sets the entity picker's position from that tab's
+  last row, so back on the picker **Enter** can open nothing.
+- The TUI's sync watcher treats "queued" as finished, and watches every
+  activity row rather than the ones it started, so a stale "running" job
+  keeps it polling.
+- `--out` folder names drop every non-ASCII letter ("Société" becomes
+  `Soci-t`).
 
 ## Licence
 

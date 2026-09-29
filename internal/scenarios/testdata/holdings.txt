@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+ASSET                 HELD IN                        QUANTITY       VALUE          
+BTC                   bitcoin                          1.2345  154,321.99          
+USDC                  hyperliquid, Kraken             2,500.5    2,500.50  mismatch
+0xccef6bdd7534f750e…  evm-wallet-a (Ethereum) +2  <0.00000001           —          
+--- stderr
+! 1 asset(s) disagree with the source's reported balance.

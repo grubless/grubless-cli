@@ -1,0 +1,4 @@
+exit 2
+--- stdout
+--- stderr
+--json writes to stdout; drop --out, or redirect it.

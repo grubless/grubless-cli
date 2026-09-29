@@ -1,0 +1,88 @@
+exit 2
+--- stdout
+--- stderr
+grubless 0.1.0 — crypto tax for entities
+
+USAGE
+  grubless <command> [options]
+
+COMMANDS
+  auth login [--token <t>]      Authenticate with an API token
+  auth logout                   Forget the stored token
+  auth whoami                   Show the current account and its entities
+
+  entities list                 List entities this account can reach
+
+  sources list                  List an entity's sources
+  sources sync                  Queue a sync (--source <id> | --all)
+  import <file.csv>             Upload a CSV into a csv_import source
+
+  holdings                      Current positions, with reconciliation flags
+  portfolio                     Value over time (a chart, or --json for the series)
+  tax-summary                   Per-financial-year tax position
+  warnings                      Data-quality issues blocking a clean filing
+
+  transactions                  An entity's transactions, filtered, newest first
+
+  report <name>                 Download a report (see REPORTS below)
+
+COMMON OPTIONS
+  --entity <id|name>            Target entity; name may be an unambiguous prefix
+  --all-entities                Every entity this account can reach
+  --json                        Machine-readable output on stdout
+  --api-url <url>               Override the API endpoint
+  -h, --help                    Show this help
+  -v, --version                 Show the version
+
+REPORT OPTIONS
+  --year <startYear>            Financial year, e.g. 2025
+  --out <path|dir>              Write to a file, or a directory with --all-entities
+  --json                        Rows as JSON on stdout, including --all-entities
+                                (not for bundle / ato-mytax / division-70: PDF and ZIP)
+
+SYNC / IMPORT OPTIONS
+  --wait                        Block until the queued work finishes
+  --full                        Re-fetch entire history, ignoring last sync
+  --timeout <minutes>           How long --wait waits (default 35)
+
+TRANSACTIONS OPTIONS
+  --category <a,b,…>            Event types, e.g. transfer,send (the API lists them all on a bad one)
+  --direction <in|out>          Only transactions with a leg moving this way
+  --from <date>, --to <date>    ISO date or timestamp bounds
+  --source <id|label>           One source
+  --asset <id|symbol>           One asset; a symbol must be one the entity holds
+  --search <text>               Free-text search
+  --sort <asc|desc>             Oldest or newest first (default desc)
+  --limit <n|all>               How many to show (default 50)
+
+PORTFOLIO OPTIONS
+  --range <key>                 24h, 1w, 1m, 3m, 6m, 1y, fy, all (default all)
+
+WARNINGS OPTIONS
+  --fail-on-blocking            Exit 4 if blocking issues exist (CI gate)
+
+REPORTS
+  capital-gains, income, fees, expenses, buy-sell, gifts-donations-lost, other-gains, transaction-history, balances-per-source, beginning-of-year-holdings, end-of-year-holdings, highest-balance, division-70-trading-stock, ato-mytax, bundle
+
+ENVIRONMENT
+  GRUBLESS_TOKEN                API token; takes precedence over stored config
+  GRUBLESS_API_URL              Default API endpoint
+  GRUBLESS_THEME                Interface theme: cypher (default) or terminal; t switches it
+  NO_COLOR                      Disable colour
+
+EXIT CODES
+  0 ok   1 failed   2 usage   3 auth   4 blocking warnings   5 upgrade required
+
+EXAMPLES
+  # Every client's capital gains for FY2025, one directory per entity
+  grubless report capital-gains --all-entities --year 2025 --out ./clients/
+
+  # The same data as one JSON document on stdout — for jq, or an LLM tool
+  grubless report capital-gains --all-entities --year 2025 --json | jq '.[].entity.name'
+
+  # Pre-filing gate for CI
+  grubless warnings --entity "Node Integration" --fail-on-blocking
+
+  # Sync everything and wait for it
+  grubless sources sync --entity acme --all --wait
+

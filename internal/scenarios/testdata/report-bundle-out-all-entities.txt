@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+--- stderr
+✓ Acme Trading Pty Ltd → <out>/Acme-Trading-Pty-Ltd/complete-tax-FY2025.zip
+✓ Société Générale <Test> & Co / 2025 → <out>/Soci-t-G-n-rale-Test-Co-2025/complete-tax-FY2025.zip
+--- files
+a/b/out/Acme-Trading-Pty-Ltd/complete-tax-FY2025.zip  4096 bytes  sha256 9d5a568930543f9fd05bf39a4236d0c2d5a3e48b77c68ff35d058c321a36d856
+a/b/out/Soci-t-G-n-rale-Test-Co-2025/complete-tax-FY2025.zip  4096 bytes  sha256 9d5a568930543f9fd05bf39a4236d0c2d5a3e48b77c68ff35d058c321a36d856

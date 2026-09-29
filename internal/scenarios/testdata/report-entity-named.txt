@@ -1,0 +1,10 @@
+exit 0
+--- stdout
+--- stderr
+✓ Acme Trading Pty Ltd → <out>/Acme-Trading-Pty-Ltd/capital-gains-FY2025.csv
+✓ Société Générale <Test> & Co / 2025 → <out>/Soci-t-G-n-rale-Test-Co-2025/capital-gains-FY2025.csv
+✓ .. → <out>/entity/capital-gains-FY2025.csv
+--- files
+a/b/out/Acme-Trading-Pty-Ltd/capital-gains-FY2025.csv  150 bytes  sha256 14ba7bc2c8767d1ddca6db777dfddabe93e2209f69ef4f2dc4f9398d8d1746e5
+a/b/out/Soci-t-G-n-rale-Test-Co-2025/capital-gains-FY2025.csv  150 bytes  sha256 14ba7bc2c8767d1ddca6db777dfddabe93e2209f69ef4f2dc4f9398d8d1746e5
+a/b/out/entity/capital-gains-FY2025.csv  150 bytes  sha256 14ba7bc2c8767d1ddca6db777dfddabe93e2209f69ef4f2dc4f9398d8d1746e5

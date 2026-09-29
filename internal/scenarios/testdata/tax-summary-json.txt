@@ -1,0 +1,71 @@
+exit 0
+--- stdout
+{
+  "entity": {
+    "id": "7f0c2a52-1d7e-4d0a-9d1b-3c1f2b8e9a01",
+    "name": "Acme Trading Pty Ltd"
+  },
+  "summaries": [
+    {
+      "financialYear": "2024–25",
+      "startYear": 2024,
+      "startDate": "2024-07-01",
+      "endDate": "2025-06-30",
+      "currency": "aud",
+      "incomeLabel": "Assessable income",
+      "income": "1071559.886401792102100000",
+      "rewardIncome": "0",
+      "miningIncome": "0",
+      "incomeByCategory": {
+        "2024": "odd key",
+        "staking": "1.5"
+      },
+      "expenses": "1200",
+      "netIncome": "0",
+      "rawCapitalGainLoss": "0",
+      "bridgingGainLoss": "0",
+      "wrappingGainLoss": "0",
+      "capitalGainLossByCategory": {},
+      "discountedCapitalGainLoss": "0",
+      "netCapitalGainLoss": "43459.49",
+      "feesPaid": "0",
+      "feesByCategory": {},
+      "broughtForwardLoss": "0",
+      "carriedForwardLoss": "-41434.915835700685932000",
+      "taxableAmount": "1016568.12",
+      "taxPayable": "254142.028769325140330000",
+      "rate": "0.25",
+      "applicable": true
+    },
+    {
+      "financialYear": "2025–26",
+      "startYear": 2025,
+      "startDate": "2025-07-01",
+      "endDate": "2026-06-30",
+      "currency": "aud",
+      "incomeLabel": "Assessable income",
+      "income": "0",
+      "rewardIncome": "0",
+      "miningIncome": "0",
+      "incomeByCategory": {},
+      "expenses": "0",
+      "netIncome": "0",
+      "rawCapitalGainLoss": "0",
+      "bridgingGainLoss": "0",
+      "wrappingGainLoss": "0",
+      "capitalGainLossByCategory": {},
+      "discountedCapitalGainLoss": "0",
+      "netCapitalGainLoss": "0",
+      "feesPaid": "0",
+      "feesByCategory": {},
+      "broughtForwardLoss": "0",
+      "carriedForwardLoss": "0.000",
+      "taxableAmount": "0",
+      "taxPayable": "0",
+      "rate": null,
+      "applicable": false,
+      "notes": "pass-through"
+    }
+  ]
+}
+--- stderr

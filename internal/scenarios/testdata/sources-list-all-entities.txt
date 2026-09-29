@@ -1,0 +1,8 @@
+exit 0
+--- stdout
+ID          ENTITY                LABEL                    ADAPTER   TXNS  SYNCED      STATUS
+src-kraken  Acme Trading Pty Ltd  Kraken                   kraken   17342  2026-08-01  idle  
+src-evm     Acme Trading Pty Ltd  evm-wallet-a (Ethereum)  evm         12  —           error 
+src-csv     Acme Trading Pty Ltd  Old exchange CSV         csv          0  2024-12-31  off   
+--- stderr
+✗ evm-wallet-a (Ethereum): RPC rate limited

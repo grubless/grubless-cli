@@ -1,0 +1,4 @@
+exit 1
+--- stdout
+--- stderr
+GET /entities failed (502): <html><body>Bad Gateway</body></html>
